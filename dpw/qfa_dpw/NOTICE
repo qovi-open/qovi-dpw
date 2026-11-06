@@ -1,0 +1,35 @@
+Qovi DpW
+Copyright (C) 2026 Marc Gandar
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version (SPDX: GPL-3.0-or-later). See the file LICENSE.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for details.
+
+Trademarks
+"Qovi", "Qovi DpW" and the Qovi logos are trademarks of Marc Gandar.
+The GPL does not grant any right to use these names or logos: a derived
+project must not be called "Qovi" and must replace the Qovi logos.
+
+Third-party components
+See THIRD_PARTY_LICENSES.md for the list of components used and their
+licences.
+
+Security
+Please report vulnerabilities privately to security@qovi.ch (see SECURITY.md).
+
+Flutter templates
+The following paths (listed in .qfa-oss-tiers) come from the Flutter project
+templates, Copyright 2014 The Flutter Authors, BSD-3-Clause:
+dpw/qfa_dpw/windows/CMakeLists.txt
+dpw/qfa_dpw/windows/runner
+dpw/qfa_dpw/windows/flutter
+dpw/qfa_dpw/linux/CMakeLists.txt
+dpw/qfa_dpw/linux/runner
+dpw/qfa_dpw/linux/flutter
+Exception: dpw/qfa_dpw/windows/runner/resources/app_icon.ico is the Qovi DpW
+logo (trademark of Marc Gandar, see above), not part of the Flutter templates.

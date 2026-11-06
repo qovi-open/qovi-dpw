@@ -1,0 +1,14 @@
+name: fid_cmp
+description: >
+  Composants crypto/protocole partagés Fid_Cmp_Pub (WLangage) — port Dart.
+  Utilisable par ser/qfa_pub_srv (serveur), awp/qfa_awp et mob/qfa_mob
+  (clients), sans dépendance dart:io : pure logique, testable partout
+  (y compris Flutter Web pour la partie encodage/décodage).
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dependencies:
+  pointycastle: ^3.9.1

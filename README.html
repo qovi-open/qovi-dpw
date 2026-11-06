@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qovi DpW — le trousseau ouvert par Qovi</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
+header { background: #0f172a; color: #fff; padding: 32px 48px; }
+header h1 { font-size: 1.9rem; margin-bottom: 8px; }
+header p { color: #94a3b8; font-size: 1.05rem; }
+.container { max-width: 880px; margin: 0 auto; padding: 40px 24px; }
+h2 { font-size: 1.4rem; color: #0f172a; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+h3 { font-size: 1.1rem; color: #334155; margin: 24px 0 10px; }
+p { color: #475569; margin-bottom: 12px; }
+code { background: #f1f5f9; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: .9rem; font-family: monospace; }
+pre { background: #0f172a; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-size: .88rem; line-height: 1.55; }
+pre .c { color: #64748b; }
+pre .k { color: #7dd3fc; }
+pre .s { color: #86efac; }
+.file-tree { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; font-family: monospace; font-size: .9rem; line-height: 1.9; white-space: pre; overflow-x: auto; }
+.file-tree .dir { color: #0369a1; font-weight: bold; }
+.file-tree .note { color: #94a3b8; }
+.box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 16px 0; }
+.box-info { border-color: #7dd3fc; background: #eff6ff; }
+.box-ok { border-color: #4ade80; background: #f0fdf4; }
+.box-warn { border-color: #fbbf24; background: #fffbeb; }
+.box-sec { border: 2px solid #0F3ECE; background: #F3F6FF; }
+.step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+.step-num { background: #0369a1; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: .9rem; }
+.step-content { flex: 1; min-width: 0; }
+.step-content strong { color: #0f172a; }
+ul, ol { margin-left: 22px; color: #475569; margin-bottom: 12px; }
+li { margin-bottom: 6px; }
+.flow { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; font-family: monospace; font-size: .82rem; line-height: 1.8; white-space: pre; overflow-x: auto; color: #334155; }
+footer { background: #0f172a; color: #64748b; text-align: center; padding: 24px; margin-top: 60px; font-size: .9rem; }
+footer a { color: #7dd3fc; text-decoration: none; }
+.pill { display:inline-block; background:#e0f2fe; color:#0369a1; padding:2px 10px; border-radius:12px; font-size:.78rem; font-weight:bold; }
+.pill-warn { background:#fef3c7; color:#92400e; }
+/* onglets sans JavaScript */
+.tabs { margin-top: 16px; }
+.tabs > input { display: none; }
+.tabs > label { display: inline-block; padding: 10px 26px; margin-right: 4px; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; background: #e2e8f0; color: #334155; font-weight: bold; cursor: pointer; }
+.tabs > input:checked + label { background: #fff; color: #0369a1; }
+.tabs > .panel { display: none; background: #fff; border: 1px solid #e2e8f0; border-radius: 0 8px 8px 8px; padding: 8px 24px 16px; }
+#tab-usager:checked ~ #panel-usager, #tab-dev:checked ~ #panel-dev { display: block; }
+.os { font-size: 1rem; color: #0f172a; margin: 28px 0 8px; padding: 6px 12px; background: #f1f5f9; border-left: 4px solid #0369a1; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:2.2rem">🔐</div>
+  <h1>Qovi DpW — le trousseau ouvert par Qovi</h1>
+  <p>Votre trousseau de mots de passe intuitif, ouvert par Qovi sans mot de passe maître, synchronisé sans cloud par QR entre PC et mobile. <span class="pill">Windows</span> <span class="pill">Linux</span> <span class="pill">Android</span></p>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <input type="radio" name="vue" id="tab-usager" checked>
+    <label for="tab-usager">👤 Usager</label>
+    <input type="radio" name="vue" id="tab-dev">
+    <label for="tab-dev">🛠️ Développeur</label>
+
+    <!-- ===================================================== USAGER -->
+    <div class="panel" id="panel-usager">
+
+  <h2>Ce qu'il vous faut</h2>
+  <ul>
+    <li>L'app <strong>Qovi</strong> sur votre téléphone, avec votre compte Qovi.</li>
+    <li><strong>Qovi DpW</strong> sur chaque appareil où vous voulez vos mots de passe : PC Windows (installeur <code>.msi</code>), PC Linux (paquet <code>.deb</code>) et téléphone Android (<code>.apk</code>).</li>
+  </ul>
+
+  <h2>Installer</h2>
+  <h3 class="os">🪟 Windows</h3>
+  <p>Ouvrez <code>qovi-dpw.msi</code>. Windows peut afficher « éditeur inconnu » : choisissez <em>Informations complémentaires</em>, puis <em>Exécuter quand même</em>. DpW s'installe dans <em>Program Files</em>, avec un raccourci dans le menu Démarrer et sur le bureau.</p>
+  <h3 class="os">🐧 Linux</h3>
+  <p>Pour Debian, Ubuntu et leurs dérivées, en 64 bits (amd64). Dans un terminal, depuis le dossier où vous avez téléchargé le paquet :</p>
+  <pre>sudo apt install ./qovi-dpw.deb</pre>
+  <p><code>apt</code> installe aussi ce qui manque (bibliothèque GTK 3). DpW s'installe dans <code>/opt/qovi-dpw</code>, avec une entrée <em>Qovi DpW</em> dans le menu des applications ; on peut aussi le lancer par la commande <code>qovi-dpw</code>. Pour le retirer : <code>sudo apt remove qovi-dpw</code> (votre trousseau, rangé dans votre dossier personnel, n'est pas effacé).</p>
+  <h3 class="os">🤖 Android</h3>
+  <p>Ouvrez <code>qovi-dpw.apk</code> et autorisez l'installation depuis cette source si le téléphone le demande.</p>
+  <p class="note">L'APK est signée par « Qovi DpW » (empreinte SHA-256 du certificat : <code>69:F1:46:20:5E:D6:40:C6:65:73:B4:E4:A9:5D:5C:4E:69:27:23:EB:DA:C7:5D:9A:DE:BC:26:C1:30:07:9E:D6</code>). Une APK signée autrement n'est pas la nôtre.</p>
+  <div class="box box-info">Une nouvelle version s'installe par-dessus l'ancienne : vos mots de passe sont gardés.</div>
+
+  <h2>Ouvrir le trousseau</h2>
+  <div class="step"><div class="step-num">1</div><div class="step-content">Saisissez votre adresse e-mail Qovi. Elle est retenue pour la prochaine fois ; le <strong>✕</strong> à côté l'oublie.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">Touchez le grand bouton d'entrée.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Validez la demande dans l'app <strong>Qovi</strong> sur votre téléphone.</div></div>
+  <div class="box box-ok"><strong>Aucun mot de passe maître</strong> à retenir : c'est votre validation Qovi qui ouvre le trousseau. La toute première ouverture sur un appareil peut prendre jusqu'à une minute.</div>
+
+  <h2>Utiliser</h2>
+  <ul>
+    <li><strong>Rechercher</strong> : tapez un ou plusieurs mots. « banque ch » trouve les entrées qui contiennent les deux mots, dans le nom ou dans la note, sans tenir compte des majuscules ni des accents. Le <strong>✕</strong> efface la recherche.</li>
+    <li>Sur chaque ligne, quatre gros boutons : <strong>✏</strong> ouvrir la fiche ; <strong>👤</strong> copier l'identifiant ; <strong>🔑</strong> copier le mot de passe (effacé du presse-papiers après 30 secondes) ; <strong>↗</strong> ouvrir le site, si l'entrée a une adresse web.</li>
+    <li><strong>+</strong> crée une entrée, avec un mot de passe fort déjà proposé.</li>
+    <li>Dans la fiche : <strong>🗑</strong> supprime, <strong>✓</strong> enregistre, <strong>←</strong> revient sans enregistrer.</li>
+  </ul>
+
+  <h2>Synchroniser vos appareils, sans cloud</h2>
+  <div class="step"><div class="step-num">1</div><div class="step-content">Sur les deux appareils, ouvrez DpW avec <strong>le même compte</strong>.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">Touchez <strong>⟳</strong> sur les deux.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Sur l'un, touchez <strong>Envoyer</strong> : un QR s'affiche. Sur un ordinateur (Windows ou Linux), c'est le seul bouton : c'est le téléphone qui scanne.</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-content">Sur le téléphone, touchez <strong>Recevoir</strong> et scannez le QR.</div></div>
+  <p>Les deux appareils finissent avec le même trousseau. Si une entrée a été modifiée des deux côtés, les deux versions sont gardées : l'une porte la mention « copie du … », à vous de choisir. Une suppression se propage aux autres appareils.</p>
+
+  <h2>Réglages</h2>
+  <p>Touchez <strong>Qovi DpW</strong> en haut de l'écran :</p>
+  <ul>
+    <li><strong>Langue</strong> : FR, DE, IT ou EN.</li>
+    <li><strong>Verrouillage après inactivité</strong> : 5 min, 15 min, 30 min, 1 h ou 2 h.</li>
+    <li><strong>Ancien trousseau DpW</strong> (fichier <code>_DpW.aes</code>) : <em>Choisir</em> le fichier, puis <em>Importer</em> avec son ancienne clé. Le fichier d'origine n'est pas modifié.</li>
+  </ul>
+
+  <div class="box box-sec">
+    <h2 style="margin-top:0">Sécurité</h2>
+    <ul>
+      <li>Le trousseau est stocké <b>uniquement sur vos appareils</b>, chiffré. Rien n'est gardé dans un cloud.</li>
+      <li>Il se <b>verrouille seul</b> après une période sans activité (60 minutes par défaut) et DpW revient à l'écran d'ouverture.</li>
+      <li>Le bouton de sortie, en haut à gauche, verrouille tout de suite.</li>
+    </ul>
+  </div>
+
+    </div>
+
+    <!-- ===================================================== DEVELOPPEUR -->
+    <div class="panel" id="panel-dev">
+
+  <h2>L'idée</h2>
+  <p>DpW montre comment une application <strong>sans serveur à elle et sans clé privée de site</strong> peut s'appuyer sur Qovi pour ouvrir un coffre local. Le client (Flutter : Windows, Linux et Android, même code) est fourni en sources ; le service DpW côté serveur fait partie de la plateforme Qovi.</p>
+
+  <h2>1. Ouvrir sans clé privée : le parcours « Alone »</h2>
+  <p>Une app de bureau ou mobile ne peut pas garder de clé privée de site : elle serait lisible par quiconque possède l'app. DpW n'embarque donc que des valeurs <strong>publiques</strong> : la clé Alone du kit et la clé publique du site DpW.</p>
+  <div class="flow">1. CH1  GET &lt;api&gt;/RST/SiT_1_Edr?P=…   ─▶ Qovi    demande d'ouverture (clé Alone + clé publique du site)
+2. CH4  TLS &lt;api&gt;:6404               ─▶ Qovi    attente du GO (130 s), en G1 :
+                                                  kid (empreinte) + G1(i:1), puis G1(i:2)
+                                       ◀─ Qovi    l'usager valide sur son mobile
+3. CH5  TLS &lt;dpw&gt;:6999               ─▶ DpW     remise de la clé du trousseau SoK.U,
+                                                  chiffrée avec Ch5.U issue de la validation</div>
+  <p>Sur CH4, la clé de transaction <code>Prv_NaP</code> ne circule jamais : la 1re trame porte son empreinte <code>kid</code> = 16 premiers octets de HMAC-SHA256(<code>Prv_NaP</code>, <code>"qovi-ch4-kid"</code>), puis les messages en G1 avec la clé HMAC-SHA256(<code>Prv_NaP</code>, <code>"qovi-ch4-gcm"</code>). Si le canal est coupé pendant l'attente (par exemple quand l'usager passe dans l'app Qovi du même téléphone), DpW se reconnecte et renvoie <code>i:1</code> seul : le serveur renvoie alors le GO déjà donné, sans relancer le vote.</p>
+  <p>La clé du trousseau est gardée par le service DpW, par compte (table <code>dpw_keys</code>). Tous les appareils d'un même compte reçoivent la même clé : c'est ce qui permet la synchro. Elle n'est <strong>jamais écrite sur disque</strong> côté client ; elle disparaît au verrouillage.</p>
+
+  <h2>2. Le coffre local</h2>
+  <ul>
+    <li>Fichier dans le stockage privé de l'app, invisible pour l'usager.</li>
+    <li>Format : <code>"DPW2"</code> + nonce (12) + <strong>AES-256-GCM</strong>(JSON) + tag (16), clé = HMAC-SHA256(<code>SoK.U</code>, <code>"qovi-dpw-vault-v2"</code>), <code>"DPW2"</code> en données associées. Un fichier modifié ou une mauvaise clé est refusé.</li>
+    <li>Écriture atomique (fichier temporaire puis renommage) et 3 sauvegardes tournantes. Un fichier illisible n'est jamais écrasé.</li>
+    <li>Contenu : <code>{"v":3,"cod":[entrées],"del":[traces de suppression]}</code>.</li>
+  </ul>
+
+  <h2>3. La synchro par QR, sans cloud</h2>
+  <p>L'appareil A affiche le QR, l'appareil S le scanne. A tire une clé de session en deux moitiés, <code>MSB</code> et <code>LSB</code> (2 × 128 bits).</p>
+  <div class="flow">Étape 4   A ─▶ DpW   LSB + trousseau de A (chiffré avec la clé de session)
+QR        A ─▶ S     "DPWS" + MSB + code de transfert      (MSB ne passe JAMAIS par le serveur)
+Étape 5   S ─▶ DpW   code ; reçoit LSB + trousseau de A, fusionne, dépose son trousseau
+Étape 3   A ─▶ DpW   récupère le trousseau de S et fusionne</div>
+  <div class="box box-info">Le service ne détient jamais la clé de session complète : il relaie des blocs qu'il ne peut pas lire. Les blocs sont en AES-256-GCM. Le service vérifie que A et S sont ouverts sur le même compte, et le QR est à usage unique.</div>
+  <h3>Fusion (règle B), symétrique</h3>
+  <p><code>merge(a, b) = merge(b, a)</code> : les deux appareils finissent identiques.</p>
+  <ul>
+    <li>Une entrée modifiée d'un seul côté : le changement est pris.</li>
+    <li>Modifiée des deux côtés : les deux sont gardées, la plus ancienne en « copie du … ».</li>
+    <li>Une suppression se propage, sauf si l'entrée a été modifiée après. Les traces de suppression sont gardées 1 an.</li>
+  </ul>
+
+  <h2>4. Construire</h2>
+  <pre><span class="c"># Android</span>
+flutter build apk --release
+<span class="c"># Windows, puis l'installeur MSI avec WiX 5</span>
+flutter build windows --release
+wix build windows/installer/Product.wxs -arch x64 -d Ver=3.0.1 -d Rel=&lt;dossier Release&gt; -d Ico=&lt;app_icon.ico&gt;
+<span class="c"># Linux (Debian/Ubuntu amd64), puis le paquet .deb</span>
+flutter build linux --release
+bash tool/build_deb.sh 3.0.1 &lt;dossier de sortie&gt;
+<span class="c"># Tests : fusion, transfert, import WL, filtre, enveloppes G1</span>
+flutter test</pre>
+
+  <div class="box box-sec">
+    <h2 style="margin-top:0">Sécurité</h2>
+    <ul>
+      <li><b>Aucune clé privée dans l'app</b> : seulement la clé Alone et la clé publique du site.</li>
+      <li><b>Clé du trousseau en mémoire seulement</b>, effacée au verrouillage (60 min d'inactivité par défaut, réglable) avec le presse-papiers.</li>
+      <li><b>Mot de passe copié</b> : effacé du presse-papiers après 30 s, et à la fermeture.</li>
+      <li><b>Canaux chiffrés et authentifiés</b> : CH4, CH5 et la synchro utilisent l'enveloppe <b>G1</b> = <code>"G1"</code> + base64(nonce 12 + AES-256-GCM + tag 16), avec une clé dérivée par usage (HMAC-SHA256) et le sens du message en données associées. Un message modifié, rejoué dans l'autre sens ou destiné à une autre transaction est refusé. Le tout passe en plus dans TLS.</li>
+      <li><b>Import d'un ancien trousseau WL</b> : texte base64 de IV + AES-256-CBC(contrôle sur 8 octets + JSON), clair en Windows-1252 ou UTF-8.</li>
+    </ul>
+  </div>
+
+    </div>
+  </div>
+
+  <h2>Licence et sources</h2>
+  <div class="box box-info">
+    <ul>
+      <li><strong>Logiciel libre</strong> sous licence <strong>GNU GPL version 3 ou ultérieure</strong> (SPDX <code>GPL-3.0-or-later</code>). Texte complet : fichier <code>LICENSE</code> des sources.</li>
+      <li><strong>© 2026 Marc Gandar.</strong> « Qovi », « Qovi DpW » et les logos Qovi sont des marques de Marc Gandar : la licence ne donne aucun droit sur ces noms et logos, et un projet dérivé ne peut pas porter le nom « Qovi » (voir <code>NOTICE</code>).</li>
+      <li><strong>Sources :</strong> <a href="qovi-dpw-src.zip">qovi-dpw-src.zip</a>, à partir desquelles sont construits les exécutables <code>.msi</code>, <code>.apk</code> et <code>.deb</code>. Elles seront aussi publiées sur GitHub (organisation <code>qovi-open</code>).</li>
+      <li><strong>Composants tiers</strong> et leurs licences : fichier <code>THIRD_PARTY_LICENSES.md</code> des sources.</li>
+      <li><strong>Contribuer :</strong> chaque contribution porte une ligne <code>Signed-off-by</code> (DCO), voir <code>CONTRIBUTING.md</code>.</li>
+      <li><strong>Signaler une faille :</strong> en privé à <a href="mailto:security@qovi.ch">security@qovi.ch</a>, voir <code>SECURITY.md</code>.</li>
+      <li><strong>Fourni sans aucune garantie</strong>, dans les limites prévues par la licence.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  Qovi — Fini les mots de passe · <a href="https://qovi.ch">qovi.ch</a>
+</footer>
+<script>
+/* Lien direct vers un onglet : README.html#dev ou #usager (sans script, l'onglet Usager s'ouvre). */
+(function(){var t={'#dev':'tab-dev','#usager':'tab-usager'}[location.hash];if(t)document.getElementById(t).checked=true;})();
+</script>
+</body>
+</html>

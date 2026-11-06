@@ -1,0 +1,29 @@
+name: qfa_dpw
+description: Qovi DpW — client du trousseau (Windows, puis Android). Meme code, meme look.
+publish_to: 'none'
+version: 3.2.1+325
+
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+  flutter: '>=3.47.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fid_cmp:
+    path: ../../shared/fid_cmp/fid_cmp
+  pointycastle: ^3.9.1
+  crypto: ^3.0.3
+  path_provider: '>=2.1.4 <3.0.0'
+  file_selector: '>=1.0.3 <2.0.0'
+  url_launcher: '>=6.3.0 <7.0.0'
+  window_manager: '>=0.4.3 <1.0.0'
+  qr_flutter: ^4.1.0
+  flutter_zxing: ^3.1.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: '>=5.0.0 <7.0.0'
+
+flutter:
+  uses-material-design: true

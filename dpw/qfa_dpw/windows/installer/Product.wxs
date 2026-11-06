@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later
+     Copyright (C) 2026 Marc Gandar
+     FILEVER Product.wxs · 2026-11-04 · MSI Qovi DpW (WiX 5)
+     Installation par machine dans Program Files\Qovi\DpW (dossier parent Qovi
+     partage par les produits Qovi, ex. Qovi\TuI ; decision de Marc 04.11),
+     raccourcis menu Demarrer et bureau, desinstallation propre, mise a jour
+     par-dessus une version precedente, y compris l'ancien dossier
+     Program Files\Qovi DpW (UpgradeCode FIXE : ne jamais le changer ;
+     AllowSameVersionUpgrades : un MSI de meme version remplace l'ancien).
+     Variables (wix build -d) : Rel = dossier Release de Flutter, Ver = version,
+     Ico = icone. Non signe pour l'instant (decision de Marc 01.11). -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Qovi DpW" Manufacturer="Qovi" Version="$(var.Ver)"
+           UpgradeCode="7A56122D-B0BB-48AE-B34C-EF8F16081707" Scope="perMachine" Language="1036">
+    <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="Une version plus récente de Qovi DpW est déjà installée." />
+    <MediaTemplate EmbedCab="yes" />
+    <Icon Id="DpwIcon" SourceFile="$(var.Ico)" />
+    <Property Id="ARPPRODUCTICON" Value="DpwIcon" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="QoviFolder" Name="Qovi">
+        <Directory Id="INSTALLFOLDER" Name="DpW">
+          <Files Include="$(var.Rel)\**" />
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Component Id="StartMenuShortcut">
+        <Shortcut Id="StartMenuDpw" Name="Qovi DpW" Target="[INSTALLFOLDER]qfa_dpw.exe"
+                  WorkingDirectory="INSTALLFOLDER" Icon="DpwIcon" />
+        <RegistryValue Root="HKLM" Key="Software\Qovi\DpW" Name="StartMenu" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder">
+      <Component Id="DesktopShortcut">
+        <Shortcut Id="DesktopDpw" Name="Qovi DpW" Target="[INSTALLFOLDER]qfa_dpw.exe"
+                  WorkingDirectory="INSTALLFOLDER" Icon="DpwIcon" />
+        <RegistryValue Root="HKLM" Key="Software\Qovi\DpW" Name="Desktop" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+  </Package>
+</Wix>
