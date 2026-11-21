@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER mov.dart · 2026-11-02 · lot 3a (etapes 4 et 5 en AES-GCM « G1 »)
+// FILEVER mov.dart · 2026-11-10 · lot 17 (contenu commun VaultData.toJson : filtres et dates)
 // Synchro du trousseau entre deux appareils via le service DpW (port 6998).
 //
 //   A = l'appareil qui AFFICHE le QR (le PC, ou un telephone « afficher mon QR »)
@@ -29,7 +29,6 @@ import '../core/g1.dart';
 import '../core/rand.dart';
 import '../env.dart';
 import '../txt.dart';
-import '../vault/entry.dart';
 import 'merge.dart';
 
 const String kQrPrefix = 'DPWS';
@@ -64,11 +63,7 @@ String sealBlob(VaultData d, String k) {
   final nonce = randBytes(12);
   final gcm = GCMBlockCipher(AESEngine())
     ..init(true, AEADParameters(KeyParameter(hexToBytes(k)), 128, nonce, Uint8List.fromList(_aad)));
-  final clr = utf8.encode(jsonEncode({
-    'v': 3,
-    'cod': [for (final e in d.cod) e.toJson()],
-    'del': [for (final t in d.del) t.toJson()],
-  }));
+  final clr = utf8.encode(jsonEncode(d.toJson()));
   return base64.encode([...nonce, ...gcm.process(Uint8List.fromList(clr))]);
 }
 
@@ -80,11 +75,9 @@ VaultData openBlob(String b64, String k) {
       ..init(false,
           AEADParameters(KeyParameter(hexToBytes(k)), 128, b.sublist(0, 12), Uint8List.fromList(_aad)));
     final m = jsonDecode(utf8.decode(gcm.process(b.sublist(12))));
-    final cod = m is Map ? m['cod'] : null;
-    final del = m is Map ? m['del'] : null;
-    if (cod is! List) throw SyncError(T.recvInvalid);
-    return VaultData([for (final e in cod) if (e is Map) Entry.fromJson(e)],
-        del is List ? del.map(Tomb.fromJson).whereType<Tomb>().toList() : []);
+    final d = VaultData.fromJson(m);
+    if (d == null) throw SyncError(T.recvInvalid);
+    return d;
   } on SyncError {
     rethrow;
   } catch (_) {

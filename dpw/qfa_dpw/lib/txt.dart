@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER txt.dart · 2026-11-06 · lot 15 (repartir d'un trousseau vide)
+// FILEVER txt.dart · 2026-11-18 · lot 19 (W12 : libelle Version)
 // Tous les textes visibles du client DpW, en quatre langues (decision de
 // Marc 01.11 : les trois langues suisses + anglais US). La langue suit
 // celle de l'appareil (toute autre langue donne l'anglais), sauf si l'usager
@@ -63,6 +63,23 @@ class T {
       'Il portachiavi di questo dispositivo non si apre.',
       'This device’s keychain cannot be opened.');
   static String get clear => _p('Effacer', 'Löschen', 'Cancella', 'Clear');
+  static String get fltAdd => _p('Enregistrer ce filtre', 'Diesen Filter speichern', 'Salva questo filtro',
+      'Save this filter');
+  static String get fltDel => _p('Détruire ce filtre', 'Diesen Filter löschen', 'Elimina questo filtro',
+      'Delete this filter');
+  static String get fltNone => _p('Aucun filtre enregistré. Tapez un filtre puis +.',
+      'Kein gespeicherter Filter. Filter eingeben, dann +.', 'Nessun filtro salvato. Scriva un filtro, poi +.',
+      'No saved filters. Type a filter, then +.');
+  static String get showDates => _p('Afficher les dates', 'Daten anzeigen', 'Mostra le date', 'Show dates');
+  static String get showDatesHint => _p(
+      'Création à gauche, modification à droite ; un clic sur une date trie la liste.',
+      'Erstellung links, Änderung rechts; ein Klick auf ein Datum sortiert die Liste.',
+      'Creazione a sinistra, modifica a destra; un clic su una data ordina l’elenco.',
+      'Created on the left, modified on the right; click a date to sort the list.');
+  static String get sortCre => _p('Trier par date de création', 'Nach Erstellungsdatum sortieren',
+      'Ordina per data di creazione', 'Sort by creation date');
+  static String get sortMod => _p('Trier par date de modification', 'Nach Änderungsdatum sortieren',
+      'Ordina per data di modifica', 'Sort by modification date');
   static String get sync => _p('Synchroniser', 'Synchronisieren', 'Sincronizzare', 'Sync');
   static String get newKey => _p('Nouvelle clé', 'Neuer Schlüssel', 'Nuova chiave', 'New key');
   static String get noName => _p('(sans nom)', '(ohne Namen)', '(senza nome)', '(no name)');
@@ -101,6 +118,7 @@ class T {
       'Bereit: mit dem alten Schlüssel importieren.', 'Pronto: lo importi con la vecchia chiave.',
       'Ready: import it with its old key.');
   static String get importBtn => _p('Importer', 'Importieren', 'Importa', 'Import');
+  static String get version => _p('Version', 'Version', 'Versione', 'Version');
   static String get deviceId => _p('Identifiant du poste', 'Geräte-ID', 'ID del dispositivo', 'Device ID');
   static String get oldKey => _p('Ancienne clé du trousseau', 'Alter Schlüssel des Schlüsselbunds',
       'Vecchia chiave del portachiavi', 'Old keychain key');
@@ -220,6 +238,20 @@ class T {
   static String get noApproval => _p('Aucune validation reçue en 130 s.', 'Keine Bestätigung innerhalb von 130 s.',
       'Nessuna conferma ricevuta in 130 s.', 'No approval received within 130 s.');
   static String message(Object n) => _p('message $n', 'Meldung $n', 'messaggio $n', 'message $n');
+
+  /// Texte d'un refus de Qovi connu par son numero (Tip.t[0]), null sinon.
+  /// [waits] = valeur de %Waits recue (ex. « 12 s »), vide possible (lot 18, MoB.4).
+  static String? tip(int n, String waits) => switch (n) {
+        441 => _p('Votre adresse est en cours de validation dans un autre contexte.',
+                'Ihre Adresse wird gerade in einem anderen Kontext bestätigt.',
+                'Il suo indirizzo è in fase di convalida in un altro contesto.',
+                'Your address is being validated in another context.') +
+            (waits.isEmpty
+                ? ''
+                : _p(' Attendez $waits et relancez.', ' Warten Sie $waits und versuchen Sie es erneut.',
+                    ' Attenda $waits e riprovi.', ' Wait $waits and try again.')),
+        _ => null,
+      };
   static String dpwDown(String h) => _p('Service DpW injoignable ($h).', 'DpW-Dienst nicht erreichbar ($h).',
       'Servizio DpW non raggiungibile ($h).', 'DpW service unreachable ($h).');
   static String get dpwNoReply => _p('Pas de réponse du service DpW.', 'Keine Antwort vom DpW-Dienst.',

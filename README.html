@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Qovi DpW — le trousseau ouvert par Qovi</title>
+<title>Qovi DpW — le trousseau ouvert par Qovi · the keychain opened by Qovi</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Arial, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.7; }
-header { background: #0f172a; color: #fff; padding: 32px 48px; }
+header { background: #0f172a; color: #fff; padding: 32px 48px; position: relative; }
 header h1 { font-size: 1.9rem; margin-bottom: 8px; }
 header p { color: #94a3b8; font-size: 1.05rem; }
+.lgsw { position: absolute; top: 18px; right: 24px; font-size: .9rem; }
+.lgsw a { color: #94a3b8; text-decoration: none; padding: 4px 10px; border: 1px solid #334155; border-radius: 12px; margin-left: 6px; }
+.lgsw a.on { color: #fff; border-color: #7dd3fc; }
 .container { max-width: 880px; margin: 0 auto; padding: 40px 24px; }
 h2 { font-size: 1.4rem; color: #0f172a; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
 h3 { font-size: 1.1rem; color: #334155; margin: 24px 0 10px; }
@@ -19,9 +22,6 @@ pre { background: #0f172a; color: #e2e8f0; padding: 20px; border-radius: 8px; ov
 pre .c { color: #64748b; }
 pre .k { color: #7dd3fc; }
 pre .s { color: #86efac; }
-.file-tree { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; font-family: monospace; font-size: .9rem; line-height: 1.9; white-space: pre; overflow-x: auto; }
-.file-tree .dir { color: #0369a1; font-weight: bold; }
-.file-tree .note { color: #94a3b8; }
 .box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 16px 0; }
 .box-info { border-color: #7dd3fc; background: #eff6ff; }
 .box-ok { border-color: #4ade80; background: #f0fdf4; }
@@ -38,22 +38,28 @@ footer { background: #0f172a; color: #64748b; text-align: center; padding: 24px;
 footer a { color: #7dd3fc; text-decoration: none; }
 .pill { display:inline-block; background:#e0f2fe; color:#0369a1; padding:2px 10px; border-radius:12px; font-size:.78rem; font-weight:bold; }
 .pill-warn { background:#fef3c7; color:#92400e; }
-/* onglets sans JavaScript */
+/* onglets sans JavaScript / tabs without JavaScript */
 .tabs { margin-top: 16px; }
 .tabs > input { display: none; }
 .tabs > label { display: inline-block; padding: 10px 26px; margin-right: 4px; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; background: #e2e8f0; color: #334155; font-weight: bold; cursor: pointer; }
 .tabs > input:checked + label { background: #fff; color: #0369a1; }
 .tabs > .panel { display: none; background: #fff; border: 1px solid #e2e8f0; border-radius: 0 8px 8px 8px; padding: 8px 24px 16px; }
-#tab-usager:checked ~ #panel-usager, #tab-dev:checked ~ #panel-dev { display: block; }
+#tab-usager:checked ~ #panel-usager, #tab-dev:checked ~ #panel-dev,
+#tab-user:checked ~ #panel-user, #tab-devel:checked ~ #panel-devel { display: block; }
 .os { font-size: 1rem; color: #0f172a; margin: 28px 0 8px; padding: 6px 12px; background: #f1f5f9; border-left: 4px solid #0369a1; border-radius: 4px; }
+/* langue : sans script, les deux versions s'affichent l'une après l'autre */
+html.lg-fr #lg-en, html.lg-en #lg-fr { display: none; }
 </style>
 </head>
 <body>
 
+<!-- ######################################################################## FRANÇAIS -->
+<div id="lg-fr" lang="fr">
 <header>
+  <div class="lgsw"><a href="#fr" class="on">FR</a><a href="#en">EN</a></div>
   <div style="font-size:2.2rem">🔐</div>
   <h1>Qovi DpW — le trousseau ouvert par Qovi</h1>
-  <p>Votre trousseau de mots de passe intuitif, ouvert par Qovi sans mot de passe maître, synchronisé sans cloud par QR entre PC et mobile. <span class="pill">Windows</span> <span class="pill">Linux</span> <span class="pill">Android</span></p>
+  <p>Votre trousseau de mots de passe intuitif, ouvert par Qovi sans mot de passe maître, synchronisé sans cloud par QR entre PC et mobile. <span class="pill">Windows</span> <span class="pill">Linux</span> <span class="pill">Android</span> <span class="pill pill-warn">macOS · iOS : depuis les sources</span></p>
 </header>
 
 <div class="container">
@@ -71,6 +77,7 @@ footer a { color: #7dd3fc; text-decoration: none; }
   <ul>
     <li>L'app <strong>Qovi</strong> sur votre téléphone, avec votre compte Qovi.</li>
     <li><strong>Qovi DpW</strong> sur chaque appareil où vous voulez vos mots de passe : PC Windows (installeur <code>.msi</code>), PC Linux (paquet <code>.deb</code>) et téléphone Android (<code>.apk</code>).</li>
+    <li><strong>Mac et iPhone</strong> : pas encore d'installeur. Un développeur peut fabriquer DpW lui-même depuis les sources (onglet <em>Développeur</em>, « Construire »).</li>
   </ul>
 
   <h2>Installer</h2>
@@ -88,7 +95,7 @@ footer a { color: #7dd3fc; text-decoration: none; }
   <h2>Ouvrir le trousseau</h2>
   <div class="step"><div class="step-num">1</div><div class="step-content">Saisissez votre adresse e-mail Qovi. Elle est retenue pour la prochaine fois ; le <strong>✕</strong> à côté l'oublie.</div></div>
   <div class="step"><div class="step-num">2</div><div class="step-content">Touchez le grand bouton d'entrée.</div></div>
-  <div class="step"><div class="step-num">3</div><div class="step-content">Validez la demande dans l'app <strong>Qovi</strong> sur votre téléphone.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Validez la demande dans l'app <strong>Qovi</strong> sur votre téléphone. Si DpW est sur le même téléphone, Qovi s'ouvre tout seul, puis vous ramène dans DpW après la validation.</div></div>
   <div class="box box-ok"><strong>Aucun mot de passe maître</strong> à retenir : c'est votre validation Qovi qui ouvre le trousseau. La toute première ouverture sur un appareil peut prendre jusqu'à une minute.</div>
 
   <h2>Utiliser</h2>
@@ -129,7 +136,7 @@ footer a { color: #7dd3fc; text-decoration: none; }
     <div class="panel" id="panel-dev">
 
   <h2>L'idée</h2>
-  <p>DpW montre comment une application <strong>sans serveur à elle et sans clé privée de site</strong> peut s'appuyer sur Qovi pour ouvrir un coffre local. Le client (Flutter : Windows, Linux et Android, même code) est fourni en sources ; le service DpW côté serveur fait partie de la plateforme Qovi.</p>
+  <p>DpW montre comment une application <strong>sans serveur à elle et sans clé privée de site</strong> peut s'appuyer sur Qovi pour ouvrir un coffre local. Le client (Flutter : Windows, Linux, Android, macOS et iOS, même code) est fourni en sources ; le service DpW côté serveur fait partie de la plateforme Qovi.</p>
 
   <h2>1. Ouvrir sans clé privée : le parcours « Alone »</h2>
   <p>Une app de bureau ou mobile ne peut pas garder de clé privée de site : elle serait lisible par quiconque possède l'app. DpW n'embarque donc que des valeurs <strong>publiques</strong> : la clé Alone du kit et la clé publique du site DpW.</p>
@@ -170,12 +177,149 @@ QR        A ─▶ S     "DPWS" + MSB + code de transfert      (MSB ne passe JAM
 flutter build apk --release
 <span class="c"># Windows, puis l'installeur MSI avec WiX 5</span>
 flutter build windows --release
-wix build windows/installer/Product.wxs -arch x64 -d Ver=3.0.1 -d Rel=&lt;dossier Release&gt; -d Ico=&lt;app_icon.ico&gt;
+wix build windows/installer/Product.wxs -arch x64 -d Ver=&lt;version&gt; -d Rel=&lt;dossier Release&gt; -d Ico=&lt;app_icon.ico&gt;
 <span class="c"># Linux (Debian/Ubuntu amd64), puis le paquet .deb</span>
 flutter build linux --release
-bash tool/build_deb.sh 3.0.1 &lt;dossier de sortie&gt;
+bash tool/build_deb.sh &lt;version&gt; &lt;dossier de sortie&gt;
 <span class="c"># Tests : fusion, transfert, import WL, filtre, enveloppes G1</span>
 flutter test</pre>
+
+  <h3>macOS et iOS</h3>
+  <p>Il faut un Mac avec Xcode et Flutter. Les commandes se passent dans le dossier <code>dpw/qfa_dpw</code> des sources.</p>
+  <div class="box box-warn"><strong>Identifiant et nom à changer.</strong> Les sources portent les identifiants de Qovi : <code>ch.qovi.dpwx</code> (macOS, dans <code>macos/Runner/Configs/AppInfo.xcconfig</code>) et <code>ch.qovi.dpwi</code> (iOS, avec l'équipe Apple <code>583T5KBF35</code>, dans <code>ios/Runner.xcodeproj</code>). Remplacez-les par les vôtres, par exemple <code>com.exemple.dpw</code>. Si vous redistribuez votre version, elle ne doit pas s'appeler « Qovi » ni porter les logos Qovi (voir <code>NOTICE</code>).</div>
+  <pre><span class="c"># macOS : l'app (.app) se trouve ensuite dans build/macos/Build/Products/Release/</span>
+flutter build macos --release
+<span class="c"># iOS : iPhone branché au Mac, équipe et identifiant choisis dans Xcode</span>
+open ios/Runner.xcworkspace
+flutter run --release</pre>
+  <ul>
+    <li><strong>macOS</strong> : une app fabriquée sur votre propre Mac se lance sans signature. Pour la donner à d'autres Mac, il faut la signer avec un certificat <em>Developer ID</em> et la faire notariser par Apple.</li>
+    <li><strong>iOS</strong> : dans Xcode, onglet <em>Signing &amp; Capabilities</em> de la cible <em>Runner</em>, choisissez votre équipe et votre identifiant. Sur l'iPhone, activez <em>Réglages › Confidentialité et sécurité › Mode développeur</em>.</li>
+    <li><strong>Compte Apple gratuit</strong> : l'app installée expire au bout de 7 jours (il suffit de la réinstaller), et la capacité <em>Associated Domains</em> n'est pas disponible : retirez-la dans <em>Signing &amp; Capabilities</em>, sinon la signature échoue. Sans elle, pas de retour automatique depuis Qovi (section 5) : revenez dans l'app à la main après avoir validé, l'ouverture se termine.</li>
+    <li><strong>Retour automatique depuis Qovi</strong> : les domaines <code>dpw.qovi.ch</code> et <code>tst.dpw.qovi.ch</code> ne reconnaissent que l'app publiée par Qovi. Pour votre propre version, utilisez votre domaine en suivant la section 5.</li>
+  </ul>
+
+  <h2 id="retour">5. Se connecter avec Qovi depuis une app mobile : le retour automatique</h2>
+  <p>Quand votre app et l'app Qovi sont sur le <strong>même téléphone</strong>, votre app peut envoyer l'usager dans Qovi pour valider, et Qovi le ramène tout seul dans votre app après le vote. DpW le fait sur Android et sur iPhone ; cette section explique comment le faire pour votre app. Sans retour automatique, tout fonctionne quand même : l'usager revient à la main dans votre app, qui termine la connexion.</p>
+
+  <h3>Le parcours</h3>
+  <div class="flow">1. CH1  votre app ─▶ Qovi   demande, avec la clé Alone ; g.u = identifiant de la demande
+2. CH4  votre app ─▶ Qovi   G1(i:1) puis G1(i:2) : demande de vote
+3.      votre app ouvre     https://qovi.ch/app/auth?act=&lt;g.u&gt;
+                            ─▶ le système passe la main à l'app Qovi
+                               (ou à une page qui invite à l'installer)
+4.      l'usager valide dans Qovi
+5.      Qovi ouvre          &lt;adresse de retour du site&gt;?act=&lt;g.u&gt;&amp;v=ok|ko
+                            (~1,5 s après Oui → v=ok, ou Non → v=ko ;
+                             tout de suite avec v=ko si l'usager abandonne)
+                            ─▶ Android / iOS rouvre votre app (lien vérifié)
+6. CH4  votre app revient au premier plan : elle ferme CH4 et se reconnecte
+        par G1(i:1) SEUL ─▶ Qovi lui redonne le GO déjà donné</div>
+  <ul>
+    <li><strong>Seul le GO reçu par CH4 fait foi.</strong> <code>act</code> et <code>v</code> ne servent qu'à l'affichage ; votre app peut les ignorer (DpW ne les lit pas).</li>
+    <li>Ouvrez le lien d'aller <strong>après</strong> l'envoi de <code>i:2</code>, pas avant : sinon le système peut endormir votre app avant la demande de vote, et Qovi s'ouvre sans rien à valider.</li>
+    <li>Pendant que Qovi est au premier plan, le système endort votre app et la connexion CH4 peut mourir sans bruit. Au retour, fermez CH4 vous-même : la reconnexion par <code>i:1</code> seul récupère le GO. N'envoyez jamais <code>i:2</code> à la reconnexion, il relancerait le vote.</li>
+    <li>Dans DpW : <code>qoviAuthUri</code>, <code>_toQovi</code> et <code>_waitGo</code> dans <code>lib/core/alone.dart</code> (ouverture par <code>url_launcher</code> en <code>LaunchMode.externalApplication</code>, fermeture de CH4 par <code>AppLifecycleListener.onResume</code>).</li>
+  </ul>
+
+  <div class="box box-sec">
+    <h3 style="margin-top:0">Pourquoi c'est sûr</h3>
+    <ul>
+      <li><b>L'adresse de retour ne vient jamais de votre app.</b> Le lien d'aller ne porte que <code>g.u</code> (un identifiant de demande, pas un secret). Le serveur Qovi lit l'adresse dans la <b>fiche du site</b> propriétaire de la clé Alone, la vérifie, puis la joint à la demande envoyée au mobile. Une app malveillante ne peut donc pas faire ouvrir l'adresse de son choix.</li>
+      <li><b>Contrôles du serveur</b> : <code>https</code>, ni port ni identifiants dans l'adresse, 300 caractères au plus, et hôte = le domaine du site ou un de ses sous-domaines. Sinon le retour n'a pas lieu (l'usager revient à la main).</li>
+      <li><b>Le bon téléphone, le bon moment</b> : Qovi n'ouvre le retour que si un lien d'aller (<code>https://qovi.ch/app/auth?act=…</code>) a été reçu par Qovi <b>sur ce téléphone</b> depuis moins de 3 minutes, et chaque lien d'aller ne sert qu'à <b>un</b> retour. Une validation lancée depuis un autre appareil (par exemple DpW sur un PC) n'a pas de lien d'aller sur le téléphone : elle ne fait pas surgir votre app.</li>
+      <li><b>La bonne app</b> : Android et iOS ne rouvrent votre app que si votre domaine la déclare (fichiers <code>assetlinks.json</code> et <code>apple-app-site-association</code> ci-dessous). Une autre app ne peut pas se faire ouvrir à sa place.</li>
+    </ul>
+  </div>
+
+  <h3>Trois choses à mettre en place</h3>
+  <p>Dans les exemples, remplacez <code>votre-domaine.ch</code> par le domaine de votre site dans Qovi, <code>com.exemple.app</code> par l'identifiant de votre app et <code>ABCDE12345</code> par votre équipe Apple.</p>
+
+  <h3 class="os">A. Dans votre app</h3>
+  <p><strong>Android</strong>, dans <code>android/app/src/main/AndroidManifest.xml</code> (celui de DpW est un exemple complet) :</p>
+  <pre><span class="c">&lt;!-- singleTask : c'est l'instance qui attend le GO qui revient au premier plan --&gt;</span>
+&lt;activity android:name=".MainActivity" android:exported="true"
+    android:launchMode="singleTask" android:taskAffinity="" …&gt;
+  <span class="c">&lt;!-- le lien de retour ne doit pas devenir une route Flutter --&gt;</span>
+  &lt;meta-data android:name="flutter_deeplinking_enabled" android:value="false"/&gt;
+  <span class="c">&lt;!-- retour de Qovi : lien vérifié (App Link) --&gt;</span>
+  &lt;intent-filter android:autoVerify="true"&gt;
+    &lt;action android:name="android.intent.action.VIEW"/&gt;
+    &lt;category android:name="android.intent.category.DEFAULT"/&gt;
+    &lt;category android:name="android.intent.category.BROWSABLE"/&gt;
+    &lt;data android:scheme="https"/&gt;
+    &lt;data android:host="votre-domaine.ch"/&gt;
+    &lt;data android:pathPrefix="/qovi-retour"/&gt;
+  &lt;/intent-filter&gt;
+&lt;/activity&gt;
+<span class="c">&lt;!-- Android 11 et plus : permettre à l'app d'ouvrir le lien https vers Qovi --&gt;</span>
+&lt;queries&gt;
+  &lt;intent&gt;&lt;action android:name="android.intent.action.VIEW"/&gt;&lt;data android:scheme="https"/&gt;&lt;/intent&gt;
+&lt;/queries&gt;</pre>
+  <p><strong>iOS</strong>, dans <code>ios/Runner/Runner.entitlements</code> (capacité <em>Associated Domains</em>, compte Apple payant) :</p>
+  <pre>&lt;key&gt;com.apple.developer.associated-domains&lt;/key&gt;
+&lt;array&gt;
+  &lt;string&gt;applinks:votre-domaine.ch&lt;/string&gt;
+&lt;/array&gt;</pre>
+  <p>Pour les essais avec une app signée en développement, <code>applinks:votre-domaine.ch?mode=developer</code> fait lire le fichier directement sur votre site au lieu du cache d'Apple (réglage <em>Mode développeur</em> de l'iPhone requis). Retirez <code>?mode=developer</code> pour TestFlight et l'App Store.</p>
+
+  <h3 class="os">B. Sur le domaine de votre site</h3>
+  <p>Trois adresses, servies en <code>https</code>, réponse <strong>200</strong>, <strong>sans redirection</strong>. Les deux fichiers sont en <code>application/json</code>. Le chemin <code>/qovi-retour</code> est celui de DpW ; un autre convient, pourvu que l'app, les fichiers et la fiche du site disent le même.</p>
+  <p><code>https://votre-domaine.ch/.well-known/assetlinks.json</code> (Android) : le paquet et l'empreinte SHA-256 du certificat qui signe votre APK (<code>apksigner verify --print-certs votre.apk</code> ; avec la signature par Google Play, prenez l'empreinte affichée dans la Play Console).</p>
+  <pre>[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.exemple.app",
+      "sha256_cert_fingerprints": ["AA:BB:…:FF"]
+    }
+  }
+]</pre>
+  <p><code>https://votre-domaine.ch/.well-known/apple-app-site-association</code> (iOS) : fichier <strong>sans extension</strong>, équipe Apple + identifiant de l'app.</p>
+  <pre>{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["ABCDE12345.com.exemple.app"],
+        "components": [ { "/": "/qovi-retour" }, { "/": "/qovi-retour/*" } ]
+      }
+    ]
+  }
+}</pre>
+  <p>Avec Apache, un <code>.htaccess</code> dans <code>.well-known/</code> donne le bon type au fichier sans extension :</p>
+  <pre>&lt;Files "apple-app-site-association"&gt;
+    ForceType application/json
+&lt;/Files&gt;</pre>
+  <p><code>https://votre-domaine.ch/qovi-retour/</code> : une <strong>page de secours</strong>, affichée seulement si votre app n'est pas installée ou si le lien n'est pas (encore) vérifié. Elle invite à revenir dans l'app ou à l'installer. Elle ne doit <strong>ni lire ni afficher</strong> <code>act</code> et <code>v</code> (rien à en faire, et pas de risque d'injection), et répondre avec <code>Cache-Control: no-store</code> et <code>&lt;meta name="robots" content="noindex"&gt;</code>. La page de <a href="https://dpw.qovi.ch/qovi-retour/">dpw.qovi.ch</a> en est un exemple.</p>
+
+  <h3 class="os">C. Dans la fiche de votre site sur Qovi</h3>
+  <div class="step"><div class="step-num">1</div><div class="step-content">Sur <a href="https://qovi.ch">qovi.ch</a>, ouvrez la page <strong>Administration du site</strong> en vous connectant avec le compte <code>ch.qovi@votre-domaine.ch</code> (celui qui a reçu la clé de votre site).</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">Dans la carte <strong>Retour vers votre app mobile</strong>, saisissez l'<strong>Adresse de retour (facultatif)</strong> : <code>https://votre-domaine.ch/qovi-retour</code>.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Touchez <strong>Enregistrer</strong>. Une adresse qui ne respecte pas les contrôles ci-dessus est refusée, avec la raison en clair.</div></div>
+  <ul>
+    <li>Une seule adresse par site. <strong>Retirer</strong> (ou vider le champ puis <strong>Enregistrer</strong>) la supprime, après confirmation : plus de retour automatique.</li>
+    <li>La page exige une connexion de moins de 5 minutes ; chaque changement est tracé et signalé par e-mail à l'administrateur du site.</li>
+    <li>Le retour ne concerne que les demandes faites avec la <strong>clé Alone</strong> (apps sans clé privée, comme DpW). Un site web n'en a pas besoin : son retour se fait dans le même onglet du navigateur.</li>
+  </ul>
+
+  <h3>Vérifier et dépanner</h3>
+  <pre><span class="c"># les deux fichiers : HTTP 200, content-type application/json, aucune ligne location:</span>
+curl -sS -D - -o /dev/null https://votre-domaine.ch/.well-known/assetlinks.json
+curl -sS -D - -o /dev/null https://votre-domaine.ch/.well-known/apple-app-site-association
+<span class="c"># Android : le domaine doit apparaître « verified »</span>
+adb shell pm get-app-links com.exemple.app
+<span class="c"># sinon, redemander la vérification (le fichier doit être en ligne)</span>
+adb shell pm verify-app-links --re-verify com.exemple.app
+<span class="c"># ouvrir le retour à la main : votre app doit passer au premier plan</span>
+adb shell am start -a android.intent.action.VIEW -c android.intent.category.BROWSABLE -d "https://votre-domaine.ch/qovi-retour?x=1"</pre>
+  <ul>
+    <li><strong>Android vérifie le lien à l'installation.</strong> Mettez <code>assetlinks.json</code> en ligne <strong>avant</strong> de diffuser l'app. Un téléphone dont la vérification a échoué ne verra pas le retour avant une mise à jour de l'app (ou <code>--re-verify</code>).</li>
+    <li><strong>L'app s'ouvre en double</strong>, ou attend sans fin : vérifiez <code>singleTask</code> et <code>taskAffinity=""</code>.</li>
+    <li><strong>L'app s'ouvre sur un écran inattendu</strong> au retour : vérifiez <code>flutter_deeplinking_enabled=false</code>.</li>
+    <li><strong>iPhone : Safari s'ouvre au lieu de l'app.</strong> iOS garde le fichier Apple en cache : après un changement, réinstallez l'app (ou utilisez <code>?mode=developer</code> pendant les essais).</li>
+    <li><strong>Rien ne se passe après le vote</strong> : la fiche du site n'a pas d'adresse de retour ; l'adresse est refusée par les contrôles (domaine, https, port) ; le lien d'aller a été reçu il y a plus de 3 minutes ; le lien d'aller s'est ouvert dans le <strong>navigateur</strong> au lieu de Qovi (Qovi absent, ou lien de qovi.ch pas encore vérifié sur ce téléphone : la page de secours de qovi.ch s'affiche) ; ou la version de Qovi est trop ancienne (Qovi des stores 1.0.13 ou plus conseillé). L'usager peut toujours revenir à la main.</li>
+  </ul>
 
   <div class="box box-sec">
     <h2 style="margin-top:0">Sécurité</h2>
@@ -184,6 +328,7 @@ flutter test</pre>
       <li><b>Clé du trousseau en mémoire seulement</b>, effacée au verrouillage (60 min d'inactivité par défaut, réglable) avec le presse-papiers.</li>
       <li><b>Mot de passe copié</b> : effacé du presse-papiers après 30 s, et à la fermeture.</li>
       <li><b>Canaux chiffrés et authentifiés</b> : CH4, CH5 et la synchro utilisent l'enveloppe <b>G1</b> = <code>"G1"</code> + base64(nonce 12 + AES-256-GCM + tag 16), avec une clé dérivée par usage (HMAC-SHA256) et le sens du message en données associées. Un message modifié, rejoué dans l'autre sens ou destiné à une autre transaction est refusé. Le tout passe en plus dans TLS.</li>
+      <li><b>Retour automatique</b> : l'adresse vient de la fiche du site, jamais de l'app ; seul le GO de CH4 fait foi (section 5).</li>
       <li><b>Import d'un ancien trousseau WL</b> : texte base64 de IV + AES-256-CBC(contrôle sur 8 octets + JSON), clair en Windows-1252 ou UTF-8.</li>
     </ul>
   </div>
@@ -196,7 +341,7 @@ flutter test</pre>
     <ul>
       <li><strong>Logiciel libre</strong> sous licence <strong>GNU GPL version 3 ou ultérieure</strong> (SPDX <code>GPL-3.0-or-later</code>). Texte complet : fichier <code>LICENSE</code> des sources.</li>
       <li><strong>© 2026 Marc Gandar.</strong> « Qovi », « Qovi DpW » et les logos Qovi sont des marques de Marc Gandar : la licence ne donne aucun droit sur ces noms et logos, et un projet dérivé ne peut pas porter le nom « Qovi » (voir <code>NOTICE</code>).</li>
-      <li><strong>Sources :</strong> <a href="qovi-dpw-src.zip">qovi-dpw-src.zip</a>, à partir desquelles sont construits les exécutables <code>.msi</code>, <code>.apk</code> et <code>.deb</code>. Elles seront aussi publiées sur GitHub (organisation <code>qovi-open</code>).</li>
+      <li><strong>Sources :</strong> <a href="qovi-dpw-src.zip">qovi-dpw-src.zip</a>, à partir desquelles sont construits les exécutables <code>.msi</code>, <code>.apk</code> et <code>.deb</code>. Elles sont aussi publiées sur GitHub (organisation <code>qovi-open</code>, dépôt <code>qovi-dpw</code>).</li>
       <li><strong>Composants tiers</strong> et leurs licences : fichier <code>THIRD_PARTY_LICENSES.md</code> des sources.</li>
       <li><strong>Contribuer :</strong> chaque contribution porte une ligne <code>Signed-off-by</code> (DCO), voir <code>CONTRIBUTING.md</code>.</li>
       <li><strong>Signaler une faille :</strong> en privé à <a href="mailto:security@qovi.ch">security@qovi.ch</a>, voir <code>SECURITY.md</code>.</li>
@@ -205,13 +350,328 @@ flutter test</pre>
   </div>
 
 </div>
+</div>
+
+<!-- ######################################################################## ENGLISH -->
+<div id="lg-en" lang="en">
+<header>
+  <div class="lgsw"><a href="#fr">FR</a><a href="#en" class="on">EN</a></div>
+  <div style="font-size:2.2rem">🔐</div>
+  <h1>Qovi DpW — the keychain opened by Qovi</h1>
+  <p>Your easy password keychain, opened by Qovi with no master password, synchronised without any cloud by QR code between PC and phone. <span class="pill">Windows</span> <span class="pill">Linux</span> <span class="pill">Android</span> <span class="pill pill-warn">macOS · iOS: from source</span></p>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <input type="radio" name="view" id="tab-user" checked>
+    <label for="tab-user">👤 User</label>
+    <input type="radio" name="view" id="tab-devel">
+    <label for="tab-devel">🛠️ Developer</label>
+
+    <!-- ===================================================== USER -->
+    <div class="panel" id="panel-user">
+
+  <h2>What you need</h2>
+  <ul>
+    <li>The <strong>Qovi</strong> app on your phone, with your Qovi account.</li>
+    <li><strong>Qovi DpW</strong> on every device where you want your passwords: Windows PC (<code>.msi</code> installer), Linux PC (<code>.deb</code> package) and Android phone (<code>.apk</code>).</li>
+    <li><strong>Mac and iPhone</strong>: no installer yet. A developer can build DpW from source (<em>Developer</em> tab, “Build”).</li>
+  </ul>
+
+  <h2>Install</h2>
+  <h3 class="os">🪟 Windows</h3>
+  <p>Open <code>qovi-dpw.msi</code>. Windows may show “unknown publisher”: choose <em>More info</em>, then <em>Run anyway</em>. DpW installs into <em>Program Files</em>, with a shortcut in the Start menu and on the desktop.</p>
+  <h3 class="os">🐧 Linux</h3>
+  <p>For Debian, Ubuntu and their derivatives, 64-bit (amd64). In a terminal, from the folder where you downloaded the package:</p>
+  <pre>sudo apt install ./qovi-dpw.deb</pre>
+  <p><code>apt</code> also installs what is missing (GTK 3 library). DpW installs into <code>/opt/qovi-dpw</code>, with a <em>Qovi DpW</em> entry in the applications menu; you can also start it with the <code>qovi-dpw</code> command. To remove it: <code>sudo apt remove qovi-dpw</code> (your keychain, kept in your home folder, is not deleted).</p>
+  <h3 class="os">🤖 Android</h3>
+  <p>Open <code>qovi-dpw.apk</code> and allow installation from this source if the phone asks.</p>
+  <p class="note">The APK is signed by “Qovi DpW” (SHA-256 certificate fingerprint: <code>69:F1:46:20:5E:D6:40:C6:65:73:B4:E4:A9:5D:5C:4E:69:27:23:EB:DA:C7:5D:9A:DE:BC:26:C1:30:07:9E:D6</code>). An APK signed otherwise is not ours.</p>
+  <div class="box box-info">A new version installs over the old one: your passwords are kept.</div>
+
+  <h2>Open the keychain</h2>
+  <div class="step"><div class="step-num">1</div><div class="step-content">Enter your Qovi e-mail address. It is remembered for next time; the <strong>✕</strong> next to it forgets it.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">Tap the big entry button.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Approve the request in the <strong>Qovi</strong> app on your phone. If DpW is on the same phone, Qovi opens by itself, then brings you back to DpW after the approval.</div></div>
+  <div class="box box-ok"><strong>No master password</strong> to remember: your Qovi approval opens the keychain. The very first opening on a device can take up to a minute.</div>
+
+  <h2>Use</h2>
+  <ul>
+    <li><strong>Search</strong>: type one or more words. “bank ch” finds the entries that contain both words, in the name or in the note, ignoring case and accents. The <strong>✕</strong> clears the search.</li>
+    <li>On each line, four big buttons: <strong>✏</strong> open the entry; <strong>👤</strong> copy the user name; <strong>🔑</strong> copy the password (cleared from the clipboard after 30 seconds); <strong>↗</strong> open the website, if the entry has a web address.</li>
+    <li><strong>+</strong> creates an entry, with a strong password already suggested.</li>
+    <li>In the entry: <strong>🗑</strong> deletes, <strong>✓</strong> saves, <strong>←</strong> goes back without saving.</li>
+  </ul>
+
+  <h2>Synchronise your devices, without any cloud</h2>
+  <div class="step"><div class="step-num">1</div><div class="step-content">On both devices, open DpW with <strong>the same account</strong>.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">Tap <strong>⟳</strong> on both.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">On one of them, tap <strong>Send</strong>: a QR code is shown. On a computer (Windows or Linux) it is the only button: the phone does the scanning.</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-content">On the phone, tap <strong>Receive</strong> and scan the QR code.</div></div>
+  <p>Both devices end up with the same keychain. If an entry was changed on both sides, both versions are kept: one is marked “copy of …”, and you choose. A deletion spreads to the other devices.</p>
+
+  <h2>Settings</h2>
+  <p>Tap <strong>Qovi DpW</strong> at the top of the screen:</p>
+  <ul>
+    <li><strong>Language</strong>: FR, DE, IT or EN.</li>
+    <li><strong>Lock after inactivity</strong>: 5 min, 15 min, 30 min, 1 h or 2 h.</li>
+    <li><strong>Old DpW keychain</strong> (<code>_DpW.aes</code> file): <em>Choose</em> the file, then <em>Import</em> with its old key. The original file is not changed.</li>
+  </ul>
+
+  <div class="box box-sec">
+    <h2 style="margin-top:0">Security</h2>
+    <ul>
+      <li>The keychain is stored <b>only on your devices</b>, encrypted. Nothing is kept in a cloud.</li>
+      <li>It <b>locks by itself</b> after a period without activity (60 minutes by default) and DpW goes back to the opening screen.</li>
+      <li>The exit button, top left, locks it at once.</li>
+    </ul>
+  </div>
+
+    </div>
+
+    <!-- ===================================================== DEVELOPER -->
+    <div class="panel" id="panel-devel">
+
+  <h2>The idea</h2>
+  <p>DpW shows how an application <strong>with no server of its own and no private site key</strong> can rely on Qovi to open a local vault. The client (Flutter: Windows, Linux, Android, macOS and iOS, same code) is provided as source code; the DpW service on the server side is part of the Qovi platform.</p>
+
+  <h2>1. Opening without a private key: the “Alone” flow</h2>
+  <p>A desktop or mobile app cannot keep a private site key: anyone who has the app could read it. DpW therefore only embeds <strong>public</strong> values: the kit's Alone key and the public key of the DpW site.</p>
+  <div class="flow">1. CH1  GET &lt;api&gt;/RST/SiT_1_Edr?P=…   ─▶ Qovi    opening request (Alone key + public site key)
+2. CH4  TLS &lt;api&gt;:6404               ─▶ Qovi    wait for the GO (130 s), in G1:
+                                                  kid (fingerprint) + G1(i:1), then G1(i:2)
+                                       ◀─ Qovi    the user approves on their phone
+3. CH5  TLS &lt;dpw&gt;:6999               ─▶ DpW     delivery of the keychain key SoK.U,
+                                                  encrypted with Ch5.U from the approval</div>
+  <p>On CH4, the transaction key <code>Prv_NaP</code> never travels: the first frame carries its fingerprint <code>kid</code> = first 16 bytes of HMAC-SHA256(<code>Prv_NaP</code>, <code>"qovi-ch4-kid"</code>), then the messages in G1 with the key HMAC-SHA256(<code>Prv_NaP</code>, <code>"qovi-ch4-gcm"</code>). If the channel drops while waiting (for example when the user switches to the Qovi app on the same phone), DpW reconnects and sends <code>i:1</code> only: the server then sends the GO already given, without starting the vote again.</p>
+  <p>The keychain key is kept by the DpW service, per account (<code>dpw_keys</code> table). All the devices of one account receive the same key: that is what makes synchronisation possible. It is <strong>never written to disk</strong> on the client; it disappears when the keychain locks.</p>
+
+  <h2>2. The local vault</h2>
+  <ul>
+    <li>File in the app's private storage, invisible to the user.</li>
+    <li>Format: <code>"DPW2"</code> + nonce (12) + <strong>AES-256-GCM</strong>(JSON) + tag (16), key = HMAC-SHA256(<code>SoK.U</code>, <code>"qovi-dpw-vault-v2"</code>), <code>"DPW2"</code> as associated data. A modified file or a wrong key is rejected.</li>
+    <li>Atomic write (temporary file, then rename) and 3 rotating backups. An unreadable file is never overwritten.</li>
+    <li>Content: <code>{"v":3,"cod":[entries],"del":[deletion marks]}</code>.</li>
+  </ul>
+
+  <h2>3. QR synchronisation, without any cloud</h2>
+  <p>Device A shows the QR code, device S scans it. A draws a session key in two halves, <code>MSB</code> and <code>LSB</code> (2 × 128 bits).</p>
+  <div class="flow">Step 4    A ─▶ DpW   LSB + A's keychain (encrypted with the session key)
+QR        A ─▶ S     "DPWS" + MSB + transfer code          (MSB NEVER goes through the server)
+Step 5    S ─▶ DpW   code; receives LSB + A's keychain, merges, uploads its own keychain
+Step 3    A ─▶ DpW   fetches S's keychain and merges</div>
+  <div class="box box-info">The service never holds the full session key: it relays blocks it cannot read. The blocks are AES-256-GCM. The service checks that A and S are open on the same account, and the QR code can be used only once.</div>
+  <h3>Merge (rule B), symmetric</h3>
+  <p><code>merge(a, b) = merge(b, a)</code>: both devices end up identical.</p>
+  <ul>
+    <li>An entry changed on one side only: the change is taken.</li>
+    <li>Changed on both sides: both are kept, the older one as “copy of …”.</li>
+    <li>A deletion spreads, unless the entry was changed afterwards. Deletion marks are kept for 1 year.</li>
+  </ul>
+
+  <h2>4. Build</h2>
+  <pre><span class="c"># Android</span>
+flutter build apk --release
+<span class="c"># Windows, then the MSI installer with WiX 5</span>
+flutter build windows --release
+wix build windows/installer/Product.wxs -arch x64 -d Ver=&lt;version&gt; -d Rel=&lt;Release folder&gt; -d Ico=&lt;app_icon.ico&gt;
+<span class="c"># Linux (Debian/Ubuntu amd64), then the .deb package</span>
+flutter build linux --release
+bash tool/build_deb.sh &lt;version&gt; &lt;output folder&gt;
+<span class="c"># Tests: merge, transfer, WL import, filter, G1 envelopes</span>
+flutter test</pre>
+
+  <h3>macOS and iOS</h3>
+  <p>You need a Mac with Xcode and Flutter. Run the commands in the <code>dpw/qfa_dpw</code> folder of the source code.</p>
+  <div class="box box-warn"><strong>Identifier and name to change.</strong> The source code carries Qovi's identifiers: <code>ch.qovi.dpwx</code> (macOS, in <code>macos/Runner/Configs/AppInfo.xcconfig</code>) and <code>ch.qovi.dpwi</code> (iOS, with the Apple team <code>583T5KBF35</code>, in <code>ios/Runner.xcodeproj</code>). Replace them with your own, for example <code>com.example.dpw</code>. If you redistribute your version, it must not be called “Qovi” nor carry the Qovi logos (see <code>NOTICE</code>).</div>
+  <pre><span class="c"># macOS: the app (.app) is then in build/macos/Build/Products/Release/</span>
+flutter build macos --release
+<span class="c"># iOS: iPhone connected to the Mac, team and identifier chosen in Xcode</span>
+open ios/Runner.xcworkspace
+flutter run --release</pre>
+  <ul>
+    <li><strong>macOS</strong>: an app built on your own Mac runs without signing. To give it to other Macs, sign it with a <em>Developer ID</em> certificate and have it notarised by Apple.</li>
+    <li><strong>iOS</strong>: in Xcode, <em>Signing &amp; Capabilities</em> tab of the <em>Runner</em> target, choose your team and identifier. On the iPhone, turn on <em>Settings › Privacy &amp; Security › Developer Mode</em>.</li>
+    <li><strong>Free Apple account</strong>: the installed app expires after 7 days (just reinstall it), and the <em>Associated Domains</em> capability is not available: remove it in <em>Signing &amp; Capabilities</em>, otherwise signing fails. Without it there is no automatic return from Qovi (section 5): go back to the app by hand after approving, and the opening completes.</li>
+    <li><strong>Automatic return from Qovi</strong>: the <code>dpw.qovi.ch</code> and <code>tst.dpw.qovi.ch</code> domains only recognise the app published by Qovi. For your own version, use your own domain as described in section 5.</li>
+  </ul>
+
+  <h2 id="return">5. Signing in with Qovi from a mobile app: the automatic return</h2>
+  <p>When your app and the Qovi app are on the <strong>same phone</strong>, your app can send the user to Qovi to approve, and Qovi brings them back to your app by itself after the vote. DpW does this on Android and iPhone; this section explains how to do it for your app. Without the automatic return everything still works: the user goes back to your app by hand, and it completes the sign-in.</p>
+
+  <h3>The flow</h3>
+  <div class="flow">1. CH1  your app ─▶ Qovi   request, with the Alone key; g.u = request identifier
+2. CH4  your app ─▶ Qovi   G1(i:1) then G1(i:2): vote request
+3.      your app opens     https://qovi.ch/app/auth?act=&lt;g.u&gt;
+                           ─▶ the system hands over to the Qovi app
+                              (or to a page that invites the user to install it)
+4.      the user approves in Qovi
+5.      Qovi opens         &lt;site's return address&gt;?act=&lt;g.u&gt;&amp;v=ok|ko
+                           (~1.5 s after Yes → v=ok, or No → v=ko;
+                            at once with v=ko if the user gives up)
+                           ─▶ Android / iOS reopens your app (verified link)
+6. CH4  your app comes back to the foreground: it closes CH4 and reconnects
+        with G1(i:1) ONLY ─▶ Qovi gives it the GO already given</div>
+  <ul>
+    <li><strong>Only the GO received on CH4 counts.</strong> <code>act</code> and <code>v</code> are for display only; your app can ignore them (DpW does not read them).</li>
+    <li>Open the outbound link <strong>after</strong> sending <code>i:2</code>, not before: otherwise the system may put your app to sleep before the vote request, and Qovi opens with nothing to approve.</li>
+    <li>While Qovi is in the foreground, the system puts your app to sleep and the CH4 connection can die silently. When you come back, close CH4 yourself: reconnecting with <code>i:1</code> only fetches the GO. Never send <code>i:2</code> on reconnection: it would start the vote again.</li>
+    <li>In DpW: <code>qoviAuthUri</code>, <code>_toQovi</code> and <code>_waitGo</code> in <code>lib/core/alone.dart</code> (opened with <code>url_launcher</code> in <code>LaunchMode.externalApplication</code>, CH4 closed in <code>AppLifecycleListener.onResume</code>).</li>
+  </ul>
+
+  <div class="box box-sec">
+    <h3 style="margin-top:0">Why it is safe</h3>
+    <ul>
+      <li><b>The return address never comes from your app.</b> The outbound link only carries <code>g.u</code> (a request identifier, not a secret). The Qovi server reads the address from the <b>site record</b> that owns the Alone key, checks it, then attaches it to the request sent to the phone. A malicious app therefore cannot have the address of its choice opened.</li>
+      <li><b>Server checks</b>: <code>https</code>, no port and no credentials in the address, 300 characters at most, and host = the site's domain or one of its subdomains. Otherwise there is no return (the user goes back by hand).</li>
+      <li><b>The right phone, the right moment</b>: Qovi only opens the return if an outbound link (<code>https://qovi.ch/app/auth?act=…</code>) was received by Qovi <b>on this phone</b> less than 3 minutes ago, and each outbound link serves for <b>one</b> return only. An approval started from another device (for example DpW on a PC) has no outbound link on the phone: it does not pop your app up.</li>
+      <li><b>The right app</b>: Android and iOS only reopen your app if your domain declares it (<code>assetlinks.json</code> and <code>apple-app-site-association</code> files below). Another app cannot be opened in its place.</li>
+    </ul>
+  </div>
+
+  <h3>Three things to set up</h3>
+  <p>In the examples, replace <code>your-domain.com</code> with your site's domain in Qovi, <code>com.example.app</code> with your app's identifier and <code>ABCDE12345</code> with your Apple team.</p>
+
+  <h3 class="os">A. In your app</h3>
+  <p><strong>Android</strong>, in <code>android/app/src/main/AndroidManifest.xml</code> (DpW's one is a complete example):</p>
+  <pre><span class="c">&lt;!-- singleTask: the instance waiting for the GO is the one brought back --&gt;</span>
+&lt;activity android:name=".MainActivity" android:exported="true"
+    android:launchMode="singleTask" android:taskAffinity="" …&gt;
+  <span class="c">&lt;!-- the return link must not become a Flutter route --&gt;</span>
+  &lt;meta-data android:name="flutter_deeplinking_enabled" android:value="false"/&gt;
+  <span class="c">&lt;!-- return from Qovi: verified link (App Link) --&gt;</span>
+  &lt;intent-filter android:autoVerify="true"&gt;
+    &lt;action android:name="android.intent.action.VIEW"/&gt;
+    &lt;category android:name="android.intent.category.DEFAULT"/&gt;
+    &lt;category android:name="android.intent.category.BROWSABLE"/&gt;
+    &lt;data android:scheme="https"/&gt;
+    &lt;data android:host="your-domain.com"/&gt;
+    &lt;data android:pathPrefix="/qovi-retour"/&gt;
+  &lt;/intent-filter&gt;
+&lt;/activity&gt;
+<span class="c">&lt;!-- Android 11 and later: allow the app to open the https link to Qovi --&gt;</span>
+&lt;queries&gt;
+  &lt;intent&gt;&lt;action android:name="android.intent.action.VIEW"/&gt;&lt;data android:scheme="https"/&gt;&lt;/intent&gt;
+&lt;/queries&gt;</pre>
+  <p><strong>iOS</strong>, in <code>ios/Runner/Runner.entitlements</code> (<em>Associated Domains</em> capability, paid Apple account):</p>
+  <pre>&lt;key&gt;com.apple.developer.associated-domains&lt;/key&gt;
+&lt;array&gt;
+  &lt;string&gt;applinks:your-domain.com&lt;/string&gt;
+&lt;/array&gt;</pre>
+  <p>For tests with an app signed for development, <code>applinks:your-domain.com?mode=developer</code> makes iOS read the file directly from your site instead of Apple's cache (the iPhone's <em>Developer Mode</em> setting is required). Remove <code>?mode=developer</code> for TestFlight and the App Store.</p>
+
+  <h3 class="os">B. On your site's domain</h3>
+  <p>Three addresses, served over <code>https</code>, response <strong>200</strong>, <strong>no redirect</strong>. Both files are <code>application/json</code>. The path <code>/qovi-retour</code> (“Qovi return”) is the one used by DpW; any path works as long as the app, the files and the site record agree.</p>
+  <p><code>https://your-domain.com/.well-known/assetlinks.json</code> (Android): the package and the SHA-256 fingerprint of the certificate that signs your APK (<code>apksigner verify --print-certs your.apk</code>; with Google Play app signing, use the fingerprint shown in the Play Console).</p>
+  <pre>[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.app",
+      "sha256_cert_fingerprints": ["AA:BB:…:FF"]
+    }
+  }
+]</pre>
+  <p><code>https://your-domain.com/.well-known/apple-app-site-association</code> (iOS): file <strong>without extension</strong>, Apple team + app identifier.</p>
+  <pre>{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["ABCDE12345.com.example.app"],
+        "components": [ { "/": "/qovi-retour" }, { "/": "/qovi-retour/*" } ]
+      }
+    ]
+  }
+}</pre>
+  <p>With Apache, a <code>.htaccess</code> in <code>.well-known/</code> gives the file without extension the right type:</p>
+  <pre>&lt;Files "apple-app-site-association"&gt;
+    ForceType application/json
+&lt;/Files&gt;</pre>
+  <p><code>https://your-domain.com/qovi-retour/</code>: a <strong>fallback page</strong>, shown only if your app is not installed or the link is not (yet) verified. It invites the user to go back to the app or to install it. It must <strong>neither read nor display</strong> <code>act</code> and <code>v</code> (nothing to do with them, and no injection risk), and answer with <code>Cache-Control: no-store</code> and <code>&lt;meta name="robots" content="noindex"&gt;</code>. The page on <a href="https://dpw.qovi.ch/qovi-retour/">dpw.qovi.ch</a> is an example.</p>
+
+  <h3 class="os">C. In your site's record on Qovi</h3>
+  <div class="step"><div class="step-num">1</div><div class="step-content">On <a href="https://qovi.ch">qovi.ch</a>, open the <strong>Site administration</strong> page by signing in with the <code>ch.qovi@your-domain.com</code> account (the one that received your site's key).</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">In the <strong>Return to your mobile app</strong> card, enter the <strong>Return address (optional)</strong>: <code>https://your-domain.com/qovi-retour</code>.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Tap <strong>Save</strong>. An address that fails the checks above is rejected, with the reason in plain words.</div></div>
+  <ul>
+    <li>One address per site. <strong>Remove</strong>, or emptying the field then <strong>Save</strong>, deletes it (after confirmation): no more automatic return.</li>
+    <li>The page requires a sign-in less than 5 minutes old; every change is logged and reported by e-mail to the site administrator.</li>
+    <li>The return only applies to requests made with the <strong>Alone key</strong> (apps without a private key, like DpW). A website does not need it: its return happens in the same browser tab.</li>
+  </ul>
+
+  <h3>Check and troubleshoot</h3>
+  <pre><span class="c"># both files: HTTP 200, content-type application/json, no location: line</span>
+curl -sS -D - -o /dev/null https://your-domain.com/.well-known/assetlinks.json
+curl -sS -D - -o /dev/null https://your-domain.com/.well-known/apple-app-site-association
+<span class="c"># Android: the domain must show as "verified"</span>
+adb shell pm get-app-links com.example.app
+<span class="c"># otherwise, ask for verification again (the file must be online)</span>
+adb shell pm verify-app-links --re-verify com.example.app
+<span class="c"># open the return by hand: your app must come to the foreground</span>
+adb shell am start -a android.intent.action.VIEW -c android.intent.category.BROWSABLE -d "https://your-domain.com/qovi-retour?x=1"</pre>
+  <ul>
+    <li><strong>Android verifies the link at installation.</strong> Put <code>assetlinks.json</code> online <strong>before</strong> distributing the app. A phone where verification failed will not see the return until the app is updated (or <code>--re-verify</code>).</li>
+    <li><strong>The app opens twice</strong>, or waits forever: check <code>singleTask</code> and <code>taskAffinity=""</code>.</li>
+    <li><strong>The app opens on an unexpected screen</strong> on return: check <code>flutter_deeplinking_enabled=false</code>.</li>
+    <li><strong>iPhone: Safari opens instead of the app.</strong> iOS caches Apple's file: after a change, reinstall the app (or use <code>?mode=developer</code> during tests).</li>
+    <li><strong>Nothing happens after the vote</strong>: the site record has no return address; the address fails the checks (domain, https, port); the outbound link was received more than 3 minutes ago; the outbound link opened in the <strong>browser</strong> instead of Qovi (Qovi not installed, or the qovi.ch link not yet verified on this phone: qovi.ch's fallback page is shown); or the Qovi version is too old (Qovi from the stores, 1.0.13 or later, recommended). The user can always go back by hand.</li>
+  </ul>
+
+  <div class="box box-sec">
+    <h2 style="margin-top:0">Security</h2>
+    <ul>
+      <li><b>No private key in the app</b>: only the Alone key and the site's public key.</li>
+      <li><b>Keychain key in memory only</b>, wiped when locking (60 min of inactivity by default, adjustable) together with the clipboard.</li>
+      <li><b>Copied password</b>: cleared from the clipboard after 30 s, and on exit.</li>
+      <li><b>Encrypted and authenticated channels</b>: CH4, CH5 and synchronisation use the <b>G1</b> envelope = <code>"G1"</code> + base64(nonce 12 + AES-256-GCM + tag 16), with a key derived per use (HMAC-SHA256) and the message direction as associated data. A message that is modified, replayed in the other direction or meant for another transaction is rejected. Everything also goes through TLS.</li>
+      <li><b>Automatic return</b>: the address comes from the site record, never from the app; only the CH4 GO counts (section 5).</li>
+      <li><b>Import of an old WL keychain</b>: base64 text of IV + AES-256-CBC(8-byte check + JSON), plain text in Windows-1252 or UTF-8.</li>
+    </ul>
+  </div>
+
+    </div>
+  </div>
+
+  <h2>Licence and source code</h2>
+  <div class="box box-info">
+    <ul>
+      <li><strong>Free software</strong> under the <strong>GNU GPL version 3 or later</strong> (SPDX <code>GPL-3.0-or-later</code>). Full text: <code>LICENSE</code> file in the source code.</li>
+      <li><strong>© 2026 Marc Gandar.</strong> “Qovi”, “Qovi DpW” and the Qovi logos are trademarks of Marc Gandar: the licence grants no right to these names and logos, and a derived project may not be called “Qovi” (see <code>NOTICE</code>).</li>
+      <li><strong>Source code:</strong> <a href="qovi-dpw-src.zip">qovi-dpw-src.zip</a>, from which the <code>.msi</code>, <code>.apk</code> and <code>.deb</code> executables are built. It is also published on GitHub (<code>qovi-open</code> organisation, <code>qovi-dpw</code> repository).</li>
+      <li><strong>Third-party components</strong> and their licences: <code>THIRD_PARTY_LICENSES.md</code> file in the source code.</li>
+      <li><strong>Contributing:</strong> every contribution carries a <code>Signed-off-by</code> line (DCO), see <code>CONTRIBUTING.md</code>.</li>
+      <li><strong>Reporting a vulnerability:</strong> privately to <a href="mailto:security@qovi.ch">security@qovi.ch</a>, see <code>SECURITY.md</code>.</li>
+      <li><strong>Provided without any warranty</strong>, within the limits set by the licence.</li>
+    </ul>
+  </div>
+
+</div>
+</div>
 
 <footer>
-  Qovi — Fini les mots de passe · <a href="https://qovi.ch">qovi.ch</a>
+  Qovi — Fini les mots de passe · No more passwords · <a href="https://qovi.ch">qovi.ch</a>
 </footer>
 <script>
-/* Lien direct vers un onglet : README.html#dev ou #usager (sans script, l'onglet Usager s'ouvre). */
-(function(){var t={'#dev':'tab-dev','#usager':'tab-usager'}[location.hash];if(t)document.getElementById(t).checked=true;})();
+/* Langue : français pour un navigateur en français, anglais pour les autres langues ; #fr / #en forcent.
+   Onglet : #dev / #usager (FR), #en-dev / #en-user (EN), #retour / #return (section 5).
+   Sans script : les deux versions s'affichent l'une après l'autre, onglet Usager / User ouvert. */
+(function () {
+  var d = document.documentElement;
+  function show() {
+    var h = location.hash, nav = (navigator.language || 'en').toLowerCase();
+    var en = /^#(en|en-dev|en-user|return)$/.test(h) ? true : /^#(fr|dev|usager|retour)$/.test(h) ? false : nav.indexOf('fr') !== 0;
+    d.className = en ? 'lg-en' : 'lg-fr';
+    d.lang = en ? 'en' : 'fr';
+    var t = {'#dev': 'tab-dev', '#retour': 'tab-dev', '#usager': 'tab-usager', '#en-dev': 'tab-devel', '#return': 'tab-devel', '#en-user': 'tab-user'}[h];
+    if (t) document.getElementById(t).checked = true;
+    if (h === '#retour' || h === '#return') { var s = document.getElementById(h.slice(1)); if (s) s.scrollIntoView(); }
+  }
+  window.addEventListener('hashchange', show);
+  show();
+})();
 </script>
 </body>
 </html>

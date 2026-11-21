@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER main.dart · 2026-11-01 · lot 2n (fermeture immediate de la fenetre)
+// FILEVER main.dart · 2026-11-10 · lot 16 (W6 fenetre libre ; W4 place retenue ; macOS)
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'core/win_pos.dart';
 import 'ui/app_state.dart';
 import 'ui/pages.dart';
 import 'ui/style.dart';
 
-/// Taille de la fenetre WL (360 x 580) : meme ratio qu'un telephone.
+/// Taille de la fenetre WL (360 x 580) : sert seulement a la PREMIERE ouverture.
+/// W6 (Marc 06.11) : le ratio n'est plus impose, l'usager redimensionne librement.
 const double kRatio = 360 / 580;
 
 Future<void> main() async {
@@ -18,14 +20,18 @@ Future<void> main() async {
   final app = AppState();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();
-    const opts = WindowOptions(
-      size: Size(400, 400 / kRatio),
-      minimumSize: Size(330, 330 / kRatio),
-      center: true,
+    // W4 : reprendre la place de la derniere fermeture, si elle est visible.
+    final saved = await WinPos.load();
+    final Rect? pos = (saved != null && await WinPos.visible(saved)) ? saved : null;
+    final Offset? at = pos?.topLeft;
+    final opts = WindowOptions(
+      size: pos?.size ?? const Size(400, 400 / kRatio),
+      minimumSize: const Size(330, 480),
+      center: at == null,
       title: 'Qovi DpW',
     );
     await windowManager.waitUntilReadyToShow(opts, () async {
-      await windowManager.setAspectRatio(kRatio);
+      if (at != null) await windowManager.setPosition(at);
       await windowManager.setPreventClose(true);
       await windowManager.show();
       await windowManager.focus();
@@ -46,6 +52,12 @@ class _CloseGuard with WindowListener {
 
   @override
   void onWindowClose() async {
+    try {
+      // W4 : retenir la place avant de cacher la fenetre.
+      await WinPos.save(await windowManager.getBounds()).timeout(const Duration(seconds: 1));
+    } catch (_) {
+      // la place n'est pas essentielle
+    }
     try {
       await windowManager.hide();
       await app.clearClipboard().timeout(const Duration(seconds: 2));

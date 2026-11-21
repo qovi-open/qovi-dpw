@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- W9 (12.11.2026) : iOS rouvre DpW sur https://<site DpW>/qovi-retour
+	     (lien de retour ouvert par Qovi apres le vote), comme l'intent-filter
+	     verifie d'Android. Le site publie /.well-known/apple-app-site-association
+	     avec 583T5KBF35.ch.qovi.dpwi. mode=developer : iOS lit le fichier
+	     directement sur le site (sans le cache d'Apple) ; reserve aux apps
+	     signees en developpement, avec le reglage Developpeur de l'iPhone. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:dpw.qovi.ch?mode=developer</string>
+		<string>applinks:tst.dpw.qovi.ch?mode=developer</string>
+	</array>
+</dict>
+</plist>

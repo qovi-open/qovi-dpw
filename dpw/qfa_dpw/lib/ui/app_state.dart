@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER app_state.dart · 2026-11-06 · lot 15 (un trousseau par environnement ; repartir d'un trousseau vide)
+// FILEVER app_state.dart · 2026-11-10 · lot 17 (filtres enregistres W2/W3 ; dates W7)
 // Etat de l'application. La cle du trousseau vit ICI, en memoire seulement,
 // jusqu'au verrouillage ou a la fermeture de l'app.
 import 'dart:async';
@@ -13,8 +13,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/alone.dart';
+import '../core/rand.dart';
 import '../core/local_cfg.dart';
 import '../env.dart';
+import '../sync/merge.dart';
 import '../sync/mov.dart';
 import '../txt.dart';
 import '../vault/entry.dart';
@@ -32,6 +34,22 @@ String foldText(String s) {
     b.write(i < 0 ? ch : to[i]);
   }
   return b.toString();
+}
+
+/// Filtre de la liste (lot 17, W3) : chaque mot doit se trouver dans [text]
+/// (« A B » = A ET B, dans n'importe quel ordre) ; un mot precede de « - »
+/// EXCLUT les fiches qui le contiennent. Sans majuscules ni accents.
+bool matchFilter(String filter, String text) {
+  final t = foldText(text);
+  for (final w in foldText(filter).split(RegExp(r'\s+'))) {
+    if (w.isEmpty || w == '-') continue;
+    if (w.startsWith('-')) {
+      if (t.contains(w.substring(1))) return false;
+    } else if (!t.contains(w)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 class AppState extends ChangeNotifier {
@@ -71,7 +89,6 @@ class AppState extends ChangeNotifier {
   Future<void> init() async {
     cfg = await LocalCfg.load();
     applyLang(cfg!.lang);
-    filter = cfg!.filter;
     _idle ??= Timer.periodic(const Duration(seconds: 20), (_) => checkIdle());
     notifyListeners();
   }
@@ -123,7 +140,7 @@ class AppState extends ChangeNotifier {
   /// Dossier PRIVE de l'app (lot 2d, decision de Marc 01.11) : le trousseau vit
   /// sur l'appareil, invisible de l'usager ; les appareils se synchronisent par QR.
   /// Lot 15 (decision de Marc 06.11) : UN TROUSSEAU PAR ENVIRONNEMENT, dans
-  /// <localDir>/tst et <localDir>/prd ; changer d'environnement ne rend donc
+  /// `localDir/tst` et `localDir/prd` ; changer d'environnement ne rend donc
   /// plus le trousseau de l'autre illisible. [localDir] est le dossier de base.
   String? localDir;
 
@@ -213,6 +230,7 @@ class AppState extends ChangeNotifier {
       await v.open();
       vault = v;
       if (v.convertedFromWl) info = T.converted;
+      await _initFilters();
     } on VaultError catch (e) {
       error = e.msg;
     } catch (e) {
@@ -222,6 +240,7 @@ class AppState extends ChangeNotifier {
 
   /// Verrouille : oublie la cle et le contenu du trousseau.
   void lock() {
+    unawaited(_commit()); // filtre en cours de frappe : enregistre avant d'oublier la cle
     _host?.cancel();
     _host = null;
     _showSync = false;
@@ -230,6 +249,9 @@ class AppState extends ChangeNotifier {
     _sok = null;
     vault = null;
     editing = null;
+    curFlt = null;
+    filter = '';
+    sortBy = '';
     notifyListeners();
   }
 
@@ -335,31 +357,182 @@ class AppState extends ChangeNotifier {
   }
 
   // ── Liste et fiches ──────────────────────────────────────────────────
-  /// Entrees visibles : chaque mot du filtre (« A B » = A ET B) doit se
-  /// trouver dans le nom ou dans la note, sans tenir compte des majuscules
-  /// ni des accents (« cle » trouve « Clé »).
+  /// Entrees visibles : voir [matchFilter] (lot 17 : « -mot » exclut).
+  /// Tri : dernier usage ; ou, dates affichees (W7), la date choisie.
   List<Entry> get visible {
-    final l = [...?vault?.entries];
-    final words = foldText(filter).split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
-    final r = words.isEmpty
-        ? l
-        : l.where((e) {
-            final t = foldText('${e.nam}\n${e.note}');
-            return words.every(t.contains);
-          }).toList();
-    r.sort((a, b) => b.use.compareTo(a.use));
-    return r;
+    final r = [for (final e in [...?vault?.entries]) if (matchFilter(filter, '${e.nam}\n${e.note}')) e];
+    final far = DateTime.utc(1970);
+    if (showDates && sortBy == 'cre') {
+      r.sort((a, b) => (a.cre ?? far).compareTo(b.cre ?? far));
+    } else if (showDates && sortBy == 'mod') {
+      r.sort((a, b) => a.mod.compareTo(b.mod));
+    } else {
+      r.sort((a, b) => b.use.compareTo(a.use));
+      return r;
+    }
+    return sortDesc ? r.reversed.toList() : r;
   }
 
-  /// Le filtre est memorise a chaque modification (reglages locaux).
+  // ── Filtres enregistres (lot 17, W2/W3) ──────────────────────────────
+  // Chiffres DANS le trousseau (synchronises) ; les reglages locaux ne gardent
+  // que l'identifiant du filtre courant, jamais son texte.
+  String? curFlt;
+  Timer? _fltSave;
+
+  /// Menu : du plus recemment modifie au plus ancien.
+  List<Flt> get filters => [...?vault?.filters]..sort((a, b) => b.mod.compareTo(a.mod));
+
+  Flt? _flt(String? id) {
+    for (final f in vault?.filters ?? const <Flt>[]) {
+      if (f.id == id) return f;
+    }
+    return null;
+  }
+
+  /// Apres l'ouverture du trousseau : reprise unique de l'ancien filtre (en
+  /// clair dans les reglages) puis retour au filtre courant.
+  Future<void> _initFilters() async {
+    final v = vault, c = cfg;
+    if (v == null || c == null) return;
+    final old = c.filter.trim();
+    if (old.isNotEmpty) {
+      var f = v.filters.where((x) => x.txt == old).firstOrNull;
+      if (f == null) {
+        final now = DateTime.now().toUtc();
+        f = Flt(randHex(16), old, now, now);
+        await _guard(() => v.putFilter(f!));
+      }
+      c.fltId = f.id;
+      c.filter = '';
+      await c.save();
+    }
+    final f = _flt(c.fltId);
+    curFlt = f?.id;
+    filter = f?.txt ?? '';
+  }
+
+  /// Taper dans le champ : brouillon seulement, la liste se filtre mais
+  /// aucun filtre enregistre ne change (retour de Marc 10.11 : sinon le +
+  /// retombait sur le filtre courant). Entree ou + enregistrent.
   void setFilter(String f) {
-    _set(() => filter = f);
+    filter = f;
+    notifyListeners();
+  }
+
+  Future<void> _commit() async {
+    _fltSave?.cancel();
+    _fltSave = null;
+    final v = vault, cur = _flt(curFlt);
+    if (v != null && cur != null) await _guard(() => v.putFilter(cur));
+  }
+
+  Future<void> _setCur(Flt? f) async {
+    curFlt = f?.id;
+    filter = f?.txt ?? '';
     final c = cfg;
-    if (c != null && c.filter != f) {
-      c.filter = f;
-      unawaited(c.save());
+    if (c != null && c.fltId != (f?.id ?? '')) {
+      c.fltId = f?.id ?? '';
+      await c.save();
     }
   }
+
+  /// Clic dans le menu : ce filtre s'applique tout de suite.
+  Future<void> applyFilter(String id) async {
+    await _commit();
+    final f = _flt(id);
+    if (f == null) return;
+    f.use = DateTime.now().toUtc();
+    await _guard(() => vault!.putFilter(f));
+    await _setCur(_flt(id));
+    notifyListeners();
+  }
+
+  /// + : enregistre le texte comme filtre (s'il existe deja, il devient courant).
+  Future<void> addFilter() async {
+    await _commit();
+    final t = filter.trim();
+    if (t.isEmpty || vault == null) return;
+    final same = vault!.filters.where((x) => x.txt.trim() == t).firstOrNull;
+    if (same != null) return applyFilter(same.id);
+    final now = DateTime.now().toUtc();
+    final f = Flt(randHex(16), t, now, now);
+    await _guard(() => vault!.putFilter(f));
+    await _setCur(_flt(f.id));
+    notifyListeners();
+  }
+
+  /// Entree : le texte remplace celui du filtre courant ; sans filtre
+  /// courant, il devient un nouveau filtre (comme +).
+  Future<void> submitFilter() async {
+    final cur = _flt(curFlt), t = filter.trim();
+    if (cur == null) return addFilter();
+    if (t.isEmpty || vault == null) return;
+    final same = vault!.filters.where((x) => x.id != cur.id && x.txt.trim() == t).firstOrNull;
+    if (same != null) return applyFilter(same.id);
+    if (cur.txt.trim() != t) {
+      cur
+        ..txt = t
+        ..mod = DateTime.now().toUtc();
+    }
+    await _setCur(cur);
+    await _commit();
+    notifyListeners();
+  }
+
+  /// Le dernier filtre utilise, hors [except].
+  Flt? _lastUsed({String? except}) {
+    Flt? best;
+    for (final f in vault?.filters ?? const <Flt>[]) {
+      if (f.id == except) continue;
+      if (best == null || f.use.isAfter(best.use)) best = f;
+    }
+    return best;
+  }
+
+  /// Effacer : quitte le filtre courant et reprend le dernier filtre utilise
+  /// (s'il n'y en a pas : champ vide, toutes les fiches).
+  Future<void> clearFilter() async {
+    await _commit();
+    final p = _lastUsed(except: curFlt);
+    if (p != null) return applyFilter(p.id);
+    await _setCur(null);
+    notifyListeners();
+  }
+
+  /// − : detruit le filtre courant (partout, par la synchro), puis comme Effacer.
+  Future<void> deleteFilter() async {
+    final id = curFlt;
+    if (id == null || vault == null) return;
+    _fltSave?.cancel();
+    await _guard(() => vault!.dropFilter(id));
+    curFlt = null;
+    final p = _lastUsed();
+    if (p != null) return applyFilter(p.id);
+    await _setCur(null);
+    notifyListeners();
+  }
+
+  // ── Dates (W7) ───────────────────────────────────────────────────────
+  bool get showDates => cfg?.showDates ?? false;
+  String sortBy = '';
+  bool sortDesc = true;
+
+  Future<void> setShowDates(bool v) async {
+    cfg!.showDates = v;
+    if (!v) sortBy = '';
+    await cfg!.save();
+    notifyListeners();
+  }
+
+  /// Clic sur une date : tri par cette date ; second clic : ordre inverse.
+  void sortOn(String key) => _set(() {
+        if (sortBy == key) {
+          sortDesc = !sortDesc;
+        } else {
+          sortBy = key;
+          sortDesc = true;
+        }
+      });
 
   // ── Verrouillage apres inactivite (lot 2m) ────────────────────────────
   // Passe le delai sans touche, clic ni defilement, le trousseau se verrouille
@@ -413,7 +586,8 @@ class AppState extends ChangeNotifier {
     return i;
   }
 
-  void newEntry() => _set(() => editing = Entry(nam: '', pass: Entry.newPassword()));
+  void newEntry() =>
+      _set(() => editing = Entry(nam: '', pass: Entry.newPassword(), cre: DateTime.now().toUtc()));
 
   void edit(Entry e) => _set(() => editing = e.copy());
 

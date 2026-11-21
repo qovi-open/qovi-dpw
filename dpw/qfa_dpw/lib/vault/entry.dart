@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER entry.dart · 2026-11-01 · lot 2 (syn : empreinte a la derniere synchro)
+// FILEVER entry.dart · 2026-11-10 · lot 17 (W7 : date de creation cre)
 // Une entree du trousseau. Champs repris du WL (Nam/Whe/Who/Pass/Cmt/Mod/Use)
 // + un identifiant stable [id] qui permet de fusionner les modifications
 // faites sur deux postes (fichier partage par Dropbox).
@@ -21,6 +21,7 @@ class Entry {
     DateTime? mod,
     DateTime? use,
     this.syn = '',
+    this.cre,
   })  : id = id ?? randHex(16),
         mod = mod ?? DateTime.now().toUtc(),
         use = use ?? DateTime.now().toUtc();
@@ -38,13 +39,18 @@ class Entry {
   /// Sert a savoir, a la fusion, quel cote a change depuis.
   String syn;
 
+  /// W7 (lot 17) : date de CREATION, en UTC (affichee en heure locale).
+  /// null = inconnue (entree d'avant le lot 17, ou recue d'un appareil plus
+  /// ancien) : le trousseau la fixe une fois a « aujourd'hui moins 5 jours ».
+  DateTime? cre;
+
   /// Empreinte du contenu (hors dates) : nom, adresse, identifiant, mot de passe, note.
   String get hash => sha256
       .convert(utf8.encode(jsonEncode([nam, url, who, pass, note])))
       .toString();
 
   Entry copy() => Entry(
-      id: id, nam: nam, url: url, who: who, pass: pass, note: note, mod: mod, use: use, syn: syn);
+      id: id, nam: nam, url: url, who: who, pass: pass, note: note, mod: mod, use: use, syn: syn, cre: cre);
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -56,6 +62,7 @@ class Entry {
         'mod': mod.toUtc().toIso8601String(),
         'use': use.toUtc().toIso8601String(),
         if (syn.isNotEmpty) 'syn': syn,
+        if (cre != null) 'cre': cre!.toUtc().toIso8601String(),
       };
 
   static Entry fromJson(Map m) => Entry(
@@ -68,6 +75,7 @@ class Entry {
         mod: DateTime.tryParse(_s(m['mod']))?.toUtc(),
         use: DateTime.tryParse(_s(m['use']))?.toUtc(),
         syn: _s(m['syn']),
+        cre: DateTime.tryParse(_s(m['cre']))?.toUtc(),
       );
 
   /// Entree d'un trousseau WL : {"Nam":{"s":..},"Whe":{"s"},"Who":{"s"},
@@ -80,6 +88,8 @@ class Entry {
         note: _wl(m, 'Cmt', 's'),
         mod: wlTime(_wl(m, 'Mod', 't')),
         use: wlTime(_wl(m, 'Use', 't')),
+        // W7 : une entree importee d'un ancien trousseau WL nait au chargement.
+        cre: DateTime.now().toUtc(),
       );
 
   /// Nouveau mot de passe, meme regle que le WL : 128 bits en hexa + "@Ab0"

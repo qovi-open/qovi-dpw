@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER vault.dart · 2026-11-01 · lot 2k (import WL : controle de somme tolere si le JSON est valide ; message clair)
+// FILEVER vault.dart · 2026-11-10 · lot 17 (filtres chiffres ; dates de creation)
 // Le trousseau sur disque, dans le dossier choisi par l'usager (Dropbox...).
 //
 //   _DpW_v2.aes  format v2 : "DPW2" + nonce(12) + AES-256-GCM(JSON) + tag(16)
@@ -58,11 +58,7 @@ Uint8List encodeVault(VaultData d, Uint8List key) {
   final nonce = randBytes(12);
   final gcm = GCMBlockCipher(AESEngine())
     ..init(true, AEADParameters(KeyParameter(key), 128, nonce, Uint8List.fromList(_magic)));
-  final clr = utf8.encode(jsonEncode({
-    'v': 3,
-    'cod': [for (final e in d.cod) e.toJson()],
-    'del': [for (final t in d.del) t.toJson()],
-  }));
+  final clr = utf8.encode(jsonEncode(d.toJson()));
   final ct = gcm.process(Uint8List.fromList(clr));
   return Uint8List.fromList([..._magic, ...nonce, ...ct]);
 }
@@ -83,12 +79,9 @@ VaultData decodeVault(Uint8List b, Uint8List key) {
   } catch (_) {
     throw VaultError(T.wrongKey);
   }
-  final m = jsonDecode(utf8.decode(clr));
-  final cod = m is Map ? m['cod'] : null;
-  if (cod is! List) throw VaultError(T.badContent);
-  final del = m['del'];
-  return VaultData([for (final e in cod) if (e is Map) Entry.fromJson(e)],
-      del is List ? del.map(Tomb.fromJson).whereType<Tomb>().toList() : []);
+  final d = VaultData.fromJson(jsonDecode(utf8.decode(clr)));
+  if (d == null) throw VaultError(T.badContent);
+  return d;
 }
 
 /// Ancien trousseau WL : texte base64 Uid256(JSON {"Cod":[...]}, SoK.U).
@@ -210,10 +203,36 @@ class Vault {
   final String _sokU; // en memoire seulement, utile a la seule lecture WL
   List<Entry> entries = [];
   List<Tomb> tombs = [];
+
+  /// Filtres enregistres (lot 17, W2) : chiffres avec le trousseau.
+  List<Flt> filters = [];
+  List<Tomb> ftombs = [];
   String? _lastHash;
 
-  /// Le trousseau complet (entrees + traces), pour la synchro.
-  VaultData get data => VaultData([for (final e in entries) e.copy()], List.of(tombs));
+  /// Le trousseau complet (entrees, filtres, traces), pour la synchro.
+  VaultData get data => VaultData([for (final e in entries) e.copy()], List.of(tombs),
+      [for (final f in filters) f.copy()], List.of(ftombs));
+
+  void _take(VaultData d) {
+    entries = d.cod;
+    tombs = d.del;
+    filters = d.flt;
+    ftombs = d.fdel;
+  }
+
+  /// W7 (lot 17, regle de Marc) : une entree sans date de creation recoit
+  /// « aujourd'hui moins 5 jours », UNE fois (puis c'est enregistre).
+  bool _fillCre() {
+    var n = false;
+    final d = DateTime.now().toUtc().subtract(const Duration(days: 5));
+    for (final e in entries) {
+      if (e.cre == null) {
+        e.cre = d;
+        n = true;
+      }
+    }
+    return n;
+  }
 
   /// true si le trousseau vient d'etre converti depuis l'ancien format WL.
   bool convertedFromWl = false;
@@ -224,10 +243,9 @@ class Vault {
   Future<void> open() async {
     if (await file.exists()) {
       final b = await file.readAsBytes();
-      final d = decodeVault(b, _key);
-      entries = d.cod;
-      tombs = d.del;
+      _take(decodeVault(b, _key));
       _lastHash = _hash(b);
+      if (_fillCre()) await _write();
       return;
     }
     entries = [];
@@ -235,6 +253,7 @@ class Vault {
       try {
         entries = decodeWl(await _wlFile.readAsString(), _sokU);
         convertedFromWl = true;
+        _fillCre();
       } on VaultError {
         // Ancien trousseau chiffre avec une autre cle : on ouvre un trousseau
         // v2 vide, l'ancien s'importera avec son ancienne cle (importWl).
@@ -302,9 +321,7 @@ class Vault {
     final b = await file.readAsBytes();
     final h = _hash(b);
     if (h == _lastHash) return false;
-    final d = decodeVault(b, _key);
-    entries = d.cod;
-    tombs = d.del;
+    _take(decodeVault(b, _key));
     _lastHash = h;
     return true;
   }
@@ -329,8 +346,8 @@ class Vault {
   Future<MergeStats> applyRemote(VaultData remote) async {
     await reloadIfChanged();
     final r = mergeVaults(data, remote);
-    entries = r.data.cod;
-    tombs = r.data.del;
+    _take(r.data);
+    _fillCre();
     await _write();
     return r.stats;
   }
@@ -341,6 +358,24 @@ class Vault {
         }
       });
 
+  // ── Filtres enregistres (lot 17, W2) ───────────────────────────────────
+  /// Cree ou remplace un filtre.
+  Future<void> putFilter(Flt f) async {
+    await reloadIfChanged();
+    filters.removeWhere((x) => x.id == f.id);
+    filters.add(f.copy());
+    await _write();
+  }
+
+  /// Detruit un filtre et garde une trace datee (synchro).
+  Future<void> dropFilter(String id) async {
+    await reloadIfChanged();
+    filters.removeWhere((x) => x.id == id);
+    ftombs.removeWhere((t) => t.id == id);
+    ftombs.add(Tomb(id, DateTime.now().toUtc()));
+    await _write();
+  }
+
   Future<void> _mutate(void Function(List<Entry>) change) async {
     await reloadIfChanged();
     change(entries);
@@ -348,7 +383,7 @@ class Vault {
   }
 
   Future<void> _write() async {
-    final bytes = encodeVault(VaultData(entries, tombs), _key);
+    final bytes = encodeVault(VaultData(entries, tombs, filters, ftombs), _key);
     await Directory(dir).create(recursive: true);
     if (await file.exists()) await _rotate();
     final tmp = File('${file.path}.tmp');

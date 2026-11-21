@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER alone.dart · 2026-11-06 · lot 12 (Qovi ouvert APRES la demande de vote)
+// FILEVER alone.dart · 2026-11-16 · lot 18 (refus de Qovi : texte du message par numero, MoB.4)
 // Parcours d'ouverture du trousseau, repris du test_alone_client.dart valide
 // le 29.10 (A1 + A2) :
 //   1. CH1  GET <api>/RST/SiT_1_Edr?P=...  (cle Alone + cle PUBLIQUE du site)
@@ -164,7 +164,7 @@ class AloneClient {
   /// Ouvre Qovi sur la transaction ; tout echec est silencieux (la
   /// notification de Qovi reste le chemin de secours).
   Future<void> _toQovi(String act) async {
-    if (!Platform.isAndroid) return;
+    if (!Platform.isAndroid && !Platform.isIOS) return;
     try {
       await launchUrl(qoviAuthUri(cfg.api, act), mode: LaunchMode.externalApplication);
     } catch (_) {}
@@ -178,7 +178,7 @@ class AloneClient {
     final fin = DateTime.now().add(const Duration(seconds: 130));
     // Lot 11 : au retour au premier plan (Android), CH4 est ferme volontairement
     // pour forcer la reconnexion i:1 (le GO a pu partir sur une connexion morte).
-    final retour = Platform.isAndroid
+    final retour = (Platform.isAndroid || Platform.isIOS)
         ? AppLifecycleListener(onResume: () => _ch4?.destroy())
         : null;
     try {
@@ -339,14 +339,38 @@ class AloneClient {
     }
   }
 
-  static String _tipText(Map m, String fallback) {
+  static String _tipText(Map m, String fallback) => tipText(m, fallback);
+
+  /// Texte d'un refus (Tip) de Qovi, sur CH1 comme sur CH4. Un numero connu
+  /// (Tip.t[0], ex. 441) donne son texte dans la langue de DpW, avec %Waits
+  /// remplace par la valeur recue ; sinon le texte Tip.s, sinon le numero
+  /// (un refus n'est jamais masque). Lot 18 (MoB.4).
+  static String tipText(Map m, String fallback) {
     final tip = m['Tip'];
     if (tip is! Map) return '$fallback.';
+    final t0 = tip['t'];
+    if (t0 is List && t0.isNotEmpty) {
+      final n = int.tryParse('${t0.first}');
+      final known = n == null ? null : T.tip(n, _tipVar(t0, '%Waits'));
+      if (known != null) return known;
+    }
     final s = tip['s'];
     if (s is String && s.isNotEmpty && s.length < 200) return '$fallback : $s';
     final t = tip['t'];
     if (t is List && t.isNotEmpty) return '$fallback (${T.message(t.first)}).';
     return '$fallback.';
+  }
+
+  /// Valeur qui suit [name] dans Tip.t (paires '%Nom', valeur) ; vide si
+  /// absente. Nettoyee : sans caracteres de controle, 16 caracteres au plus.
+  static String _tipVar(List t, String name) {
+    for (var i = 1; i + 1 < t.length; i++) {
+      if (t[i] == name) {
+        final v = '${t[i + 1] ?? ''}'.replaceAll(RegExp(r'[\x00-\x1f\x7f]'), '').trim();
+        return v.length > 16 ? '' : v;
+      }
+    }
+    return '';
   }
 
   static String _refus(String rep) {

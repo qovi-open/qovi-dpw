@@ -4,3 +4,8 @@ dpw/qfa_dpw/windows/flutter
 dpw/qfa_dpw/linux/CMakeLists.txt
 dpw/qfa_dpw/linux/runner
 dpw/qfa_dpw/linux/flutter
+dpw/qfa_dpw/macos/Flutter
+dpw/qfa_dpw/ios/Runner/AppDelegate.swift
+dpw/qfa_dpw/ios/Runner/SceneDelegate.swift
+dpw/qfa_dpw/ios/Runner/Runner-Bridging-Header.h
+dpw/qfa_dpw/ios/RunnerTests/RunnerTests.swift

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER pages.dart · 2026-11-06 · lot 15 (trousseau illisible : repartir d'un trousseau vide ou verrouiller)
+// FILEVER pages.dart · 2026-11-18 · lot 19 (W12 : version en bas des reglages)
 // Les ecrans. Meme code pour Windows et Android : la fenetre Windows a le
 // ratio d'un telephone, donc aucune mise en page "bureau" a part.
 // Planche v3 validee par Marc le 01.11 :
@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 
 import '../env.dart';
 import '../txt.dart';
+import '../version.dart';
 import '../vault/entry.dart';
 import 'app_state.dart';
 import 'logo.dart';
@@ -318,6 +319,7 @@ class ListPage extends StatefulWidget {
 
 class _ListPageState extends State<ListPage> {
   late final _filter = TextEditingController(text: widget.app.filter);
+  bool _menu = false;
 
   @override
   void dispose() {
@@ -325,9 +327,13 @@ class _ListPageState extends State<ListPage> {
     super.dispose();
   }
 
-  void _clear() {
-    _filter.clear();
-    widget.app.setFilter('');
+  /// Action sur les filtres, puis le champ reprend le texte du filtre courant.
+  Future<void> _do(Future<void> Function() f) async {
+    await f();
+    if (!mounted) return;
+    final t = widget.app.filter;
+    _filter.value = TextEditingValue(text: t, selection: TextSelection.collapsed(offset: t.length));
+    setState(() => _menu = false);
   }
 
   @override
@@ -335,19 +341,44 @@ class _ListPageState extends State<ListPage> {
     final app = widget.app;
     final items = app.visible;
     return Column(children: [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(14, 4, 14, 6),
-        child: Row(children: [
-          Expanded(
-            child: TextField(
-              controller: _filter,
-              style: const TextStyle(fontSize: 17),
-              decoration: const InputDecoration(prefixIcon: Icon(Icons.search, color: Dpw.sub)),
-              onChanged: app.setFilter,
-            ),
+      // Lot 17 (W2) : clic dans le champ = menu des filtres enregistres ;
+      // un filtre choisi s'applique tout de suite et le menu se referme.
+      TapRegion(
+        onTapOutside: (_) {
+          if (_menu) setState(() => _menu = false);
+        },
+        child: Column(children: [
+          // Retour de Marc 10.11 : memes boutons (48) et memes ecarts (10)
+          // que l'en-tete, pour que − tombe sous ⏻, ⌫ sous ⟳ et + sous +.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
+            child: Row(children: [
+              SqBtn(
+                  icon: Icons.remove,
+                  tip: T.fltDel,
+                  onTap: app.curFlt == null ? null : () => _do(app.deleteFilter)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: _filter,
+                  style: const TextStyle(fontSize: 17),
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search, color: Dpw.sub),
+                    suffixIcon: Icon(_menu ? Icons.expand_less : Icons.expand_more, color: Dpw.sub),
+                  ),
+                  onTap: () => setState(() => _menu = true),
+                  onChanged: app.setFilter,
+                  onSubmitted: (_) => _do(app.submitFilter),
+                ),
+              ),
+              const SizedBox(width: 10),
+              SqBtn(icon: Icons.backspace_outlined, tip: T.clear, onTap: () => _do(app.clearFilter)),
+              const SizedBox(width: 10),
+              SqBtn(icon: Icons.add, tip: T.fltAdd, onTap: () => _do(app.addFilter)),
+            ]),
           ),
-          const SizedBox(width: 8),
-          SqBtn(icon: Icons.close, tip: T.clear, onTap: _clear),
+          if (_menu) _FltMenu(app: app, onPick: (id) => _do(() => app.applyFilter(id))),
         ]),
       ),
       Expanded(
@@ -359,6 +390,47 @@ class _ListPageState extends State<ListPage> {
       ),
     ]);
   }
+}
+
+/// Menu deroulant des filtres enregistres (lot 17, W2).
+class _FltMenu extends StatelessWidget {
+  const _FltMenu({required this.app, required this.onPick});
+  final AppState app;
+  final void Function(String id) onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = app.filters;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 6),
+      constraints: const BoxConstraints(maxHeight: 220),
+      decoration: BoxDecoration(
+          color: Dpw.card, borderRadius: BorderRadius.circular(14), border: Border.all(color: Dpw.line)),
+      child: l.isEmpty
+          ? Padding(
+              padding: const EdgeInsets.all(14),
+              child: Text(T.fltNone, style: const TextStyle(color: Dpw.sub)))
+          : ListView(shrinkWrap: true, padding: const EdgeInsets.symmetric(vertical: 4), children: [
+              for (final f in l)
+                ListTile(
+                  dense: true,
+                  selected: f.id == app.curFlt,
+                  selectedColor: Dpw.red,
+                  title: Text(f.txt.trim().isEmpty ? '—' : f.txt,
+                      maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15)),
+                  onTap: () => onPick(f.id),
+                ),
+            ]),
+    );
+  }
+}
+
+/// Date affichee en heure LOCALE (stockee en UTC) : AAAA-MM-JJ HH:MM.
+String _ymdhm(DateTime? t) {
+  if (t == null) return '—';
+  final l = t.toLocal();
+  String two(int v) => v.toString().padLeft(2, '0');
+  return '${l.year}-${two(l.month)}-${two(l.day)} ${two(l.hour)}:${two(l.minute)}';
 }
 
 class _EntryCard extends StatelessWidget {
@@ -376,6 +448,17 @@ class _EntryCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
       decoration: BoxDecoration(color: Dpw.card, borderRadius: BorderRadius.circular(18), boxShadow: Dpw.soft),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // W7 (lot 17) : seulement si « Afficher les dates » est coche ;
+        // creation a gauche, modification a droite, un clic trie la liste.
+        if (app.showDates)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(children: [
+              _DateTag(app: app, key0: 'cre', t: e.cre, tip: T.sortCre),
+              const Spacer(),
+              _DateTag(app: app, key0: 'mod', t: e.mod, tip: T.sortMod),
+            ]),
+          ),
         Row(children: [
           CircleAvatar(
             radius: 18,
@@ -408,6 +491,33 @@ class _EntryCard extends StatelessWidget {
 }
 
 // ── Fiche (consultation et edition) ─────────────────────────────────────
+class _DateTag extends StatelessWidget {
+  const _DateTag({required this.app, required this.key0, required this.t, required this.tip});
+  final AppState app;
+  final String key0;
+  final DateTime? t;
+  final String tip;
+
+  @override
+  Widget build(BuildContext context) {
+    final on = app.sortBy == key0;
+    final arrow = on ? (app.sortDesc ? ' ↓' : ' ↑') : '';
+    return Tooltip(
+      message: tip,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6),
+        onTap: () => app.sortOn(key0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+          child: Text('${_ymdhm(t)}$arrow',
+              style: TextStyle(
+                  fontSize: 11.5, color: on ? Dpw.red : Dpw.sub, fontWeight: on ? FontWeight.w700 : FontWeight.w400)),
+        ),
+      ),
+    );
+  }
+}
+
 class EditPage extends StatefulWidget {
   const EditPage({super.key, required this.app, required this.entry});
   final AppState app;
@@ -578,7 +688,16 @@ class NetPage extends StatelessWidget {
         for (final m in const [5, 15, 30, 60, 120])
           _choice(m < 60 ? '$m min' : '${m ~/ 60} h', c.idleMin == m, () => app.setIdle(m)),
       ]),
-      const SizedBox(height: 20),
+      const SizedBox(height: 12),
+      const Divider(),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        activeThumbColor: Dpw.red,
+        title: Text(T.showDates, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(T.showDatesHint),
+        value: c.showDates,
+        onChanged: app.setShowDates,
+      ),
       const Divider(),
       Text(T.env, style: const TextStyle(fontWeight: FontWeight.bold)),
       RadioGroup<DpwEnv>(
@@ -616,6 +735,11 @@ class NetPage extends StatelessWidget {
       ListTile(
         title: Text(T.deviceId),
         subtitle: Text('#${c.mobU.substring(0, 8)}'),
+      ),
+      // W12 : version de l'app (lib/version.dart, verifiee contre pubspec.yaml)
+      ListTile(
+        title: Text(T.version),
+        subtitle: Text(dpwVerLabel),
       ),
     ]);
   }
