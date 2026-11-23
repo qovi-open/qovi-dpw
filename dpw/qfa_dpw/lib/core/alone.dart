@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER alone.dart · 2026-11-16 · lot 18 (refus de Qovi : texte du message par numero, MoB.4)
+// FILEVER alone.dart · 2026-11-20 · lot 30 (identifiant de demande impose : lien d'aller ouvert avant ; lot 28 : 575)
 // Parcours d'ouverture du trousseau, repris du test_alone_client.dart valide
 // le 29.10 (A1 + A2) :
 //   1. CH1  GET <api>/RST/SiT_1_Edr?P=...  (cle Alone + cle PUBLIQUE du site)
@@ -48,8 +48,11 @@ const int _resKo = 1; // Res_Ko_ic
 const int _resEx = 5; // Res_Ex_ic
 
 class AloneError implements Exception {
-  AloneError(this.msg);
+  AloneError(this.msg, {this.tip});
   final String msg;
+
+  /// Lot 28 : numero du refus de Qovi (Tip.t[0], ex. 575), null sinon.
+  final int? tip;
   @override
   String toString() => msg;
 }
@@ -94,6 +97,7 @@ class AloneClient {
   static const Duration _delai = Duration(seconds: 10);
   Socket? _ch4;
   bool _cancelled = false;
+  int? _lastTip; // lot 28 : numero du dernier refus recu sur CH4
 
   void cancel() {
     _cancelled = true;
@@ -102,12 +106,14 @@ class AloneClient {
 
   /// Renvoie la cle du trousseau (64 hexa). [share] = SoK.b (cle partagee par
   /// les postes du compte), oui par defaut.
-  Future<String> run(String email, StepCb step, {bool share = true}) async {
+  /// Lot 30 : [preset] impose l'identifiant de la demande (g.u), quand le lien
+  /// d'aller vers Qovi a deja ete ouvert avec lui (bouton du refus 575).
+  Future<String> run(String email, StepCb step, {bool share = true, String? preset}) async {
     if (!cfg.ready) {
       throw AloneError(T.envNotReady(cfg.label));
     }
     step(T.stepOpen);
-    final (nap, act) = await _open(email);
+    final (nap, act) = await _open(email, act: preAct(preset));
     if (_cancelled) throw AloneError(T.cancelled);
     step(T.stepValidate);
     final go = await _waitGo(nap, act);
@@ -117,8 +123,8 @@ class AloneClient {
 
   // ── 1. CH1 : ouverture Alone ────────────────────────────────────────────
   /// Rend (Prv_NaP, g.u) : g.u est tire ici et identifie la transaction.
-  Future<(String, String)> _open(String email) async {
-    final act = randUuid();
+  Future<(String, String)> _open(String email, {String? act}) async {
+    act ??= randUuid();
     final x = {
       'g': {
         'u': act,
@@ -155,7 +161,7 @@ class AloneClient {
     final prv = chx is Map ? chx['Prv'] : null;
     final nap = prv is Map ? prv['u'] : null;
     if (nap is! String || nap.isEmpty) {
-      throw AloneError(_tipText(d, T.qoviRefused));
+      throw AloneError(_tipText(d, T.qoviRefused), tip: tipNo(d));
     }
     return (nap, act);
   }
@@ -203,7 +209,7 @@ class AloneClient {
         case _Ch4End.go:
           return r.$2!;
         case _Ch4End.refused:
-          throw AloneError(r.$3!);
+          throw AloneError(r.$3!, tip: _lastTip);
         case _Ch4End.broken:
           if (_cancelled) throw AloneError(T.cancelled);
           vote = false;
@@ -257,6 +263,7 @@ class AloneClient {
           final tip = m['Tip'];
           final r = tip is Map ? tip['r'] : null;
           if (r == _resKo || r == _resEx) {
+            _lastTip = tipNo(m);
             end((_Ch4End.refused, null, _tipText(m, T.reqRefused)));
           }
         }
@@ -340,6 +347,18 @@ class AloneClient {
   }
 
   static String _tipText(Map m, String fallback) => tipText(m, fallback);
+
+  /// Lot 30 : identifiant impose accepte seulement s'il a la forme d'un UUID
+  /// (il part tel quel vers le serveur et dans le lien de Qovi).
+  static String? preAct(String? a) =>
+      a != null && RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$').hasMatch(a) ? a : null;
+
+  /// Lot 28 : numero du refus (Tip.t[0]) ; null s'il n'y en a pas.
+  static int? tipNo(Map m) {
+    final tip = m['Tip'];
+    final t = tip is Map ? tip['t'] : null;
+    return t is List && t.isNotEmpty ? int.tryParse('${t.first}') : null;
+  }
 
   /// Texte d'un refus (Tip) de Qovi, sur CH1 comme sur CH4. Un numero connu
   /// (Tip.t[0], ex. 441) donne son texte dans la langue de DpW, avec %Waits

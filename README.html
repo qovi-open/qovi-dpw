@@ -96,15 +96,31 @@ html.lg-fr #lg-en, html.lg-en #lg-fr { display: none; }
   <div class="step"><div class="step-num">1</div><div class="step-content">Saisissez votre adresse e-mail Qovi. Elle est retenue pour la prochaine fois ; le <strong>✕</strong> à côté l'oublie.</div></div>
   <div class="step"><div class="step-num">2</div><div class="step-content">Touchez le grand bouton d'entrée.</div></div>
   <div class="step"><div class="step-num">3</div><div class="step-content">Validez la demande dans l'app <strong>Qovi</strong> sur votre téléphone. Si DpW est sur le même téléphone, Qovi s'ouvre tout seul, puis vous ramène dans DpW après la validation.</div></div>
+  <div class="box box-info"><strong>« Aucun téléphone Qovi n'est prêt »</strong> : Qovi est sans doute fermé sur votre téléphone. Sur Android (si Qovi est installé à côté de DpW) et sur iPhone, le bouton <strong>Ouvrir Qovi sur ce téléphone, puis réessayer</strong> apparaît : touchez-le : DpW relance l'ouverture tout seul quelques secondes plus tard, et Qovi vous présente la demande à valider (si rien ne se passe, revenez dans DpW : l'ouverture repart).</div>
   <div class="box box-ok"><strong>Aucun mot de passe maître</strong> à retenir : c'est votre validation Qovi qui ouvre le trousseau. La toute première ouverture sur un appareil peut prendre jusqu'à une minute.</div>
 
   <h2>Utiliser</h2>
   <ul>
     <li><strong>Rechercher</strong> : tapez un ou plusieurs mots. « banque ch » trouve les entrées qui contiennent les deux mots, dans le nom ou dans la note, sans tenir compte des majuscules ni des accents. Le <strong>✕</strong> efface la recherche.</li>
-    <li>Sur chaque ligne, quatre gros boutons : <strong>✏</strong> ouvrir la fiche ; <strong>👤</strong> copier l'identifiant ; <strong>🔑</strong> copier le mot de passe (effacé du presse-papiers après 30 secondes) ; <strong>↗</strong> ouvrir le site, si l'entrée a une adresse web.</li>
+    <li>Sur chaque ligne, quatre gros boutons : <strong>✏</strong> ouvrir la fiche ; <strong>👤</strong> copier l'identifiant ; <strong>🔑</strong> copier le mot de passe (effacé du presse-papiers après 30 secondes) ; <strong>↗</strong> ouvrir le site, si l'entrée a une adresse web ; <strong>💳</strong> afficher la carte, si l'entrée en a une (voir plus bas).</li>
     <li><strong>+</strong> crée une entrée, avec un mot de passe fort déjà proposé.</li>
     <li>Dans la fiche : <strong>🗑</strong> supprime, <strong>✓</strong> enregistre, <strong>←</strong> revient sans enregistrer.</li>
   </ul>
+
+  <h2>Photo de carte (téléphone Android ou iPhone, ou image sur PC)</h2>
+  <p>Une entrée peut garder la photo d'une carte, recto et verso : carte de crédit, de fidélité, d'assurance, d'identité… Pratique pour montrer un code-barres ou un QR à la caisse.</p>
+  <div class="step"><div class="step-num">1</div><div class="step-content">Dans la fiche, ligne <strong>💳</strong> : touchez l'appareil photo, placez la carte dans le cadre et déclenchez. <em>Sur PC</em> : cliquez sur le dossier pour choisir une image (JPEG ou PNG), ou glissez-la sur la case ; l'image d'origine reste sur votre disque, supprimez-la si elle ne sert plus.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">Ajustez les 4 droites sur les bords de la carte : un rond incline une droite, le milieu la déplace. Touchez la carte pour valider : la photo est redressée.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Faites de même pour le verso si besoin, puis <strong>✓</strong>. Un toucher sur une vignette l'affiche en grand, avec <em>Reprendre</em> et <em>Supprimer</em>.</div></div>
+  <p>Dans la liste, le bouton <strong>💳</strong> affiche le recto et le verso, avec l'écran au plus lumineux. Touchez une face pour l'afficher en plein écran, prête à être lue par un lecteur.</p>
+  <div class="box box-ok"><strong>Où sont les photos ?</strong> Sur vos appareils, et nulle part ailleurs. Chaque photo est un fichier <b>chiffré</b> (AES-256-GCM) dans le dossier privé de l'app, avec une clé dérivée de votre compte Qovi, distincte de celle du trousseau. Une photo n'est déchiffrée <b>qu'en mémoire</b>, le temps de l'afficher, et disparaît au verrouillage ou dès que l'app passe en arrière-plan. La photo n'entre jamais dans la galerie, le fichier temporaire de l'appareil photo est effacé aussitôt, et l'image enregistrée n'a aucune métadonnée (ni lieu, ni date, ni appareil). Le serveur Qovi ne voit jamais les photos. À la synchro, chaque appareil envoie à l'autre les photos qui lui manquent : elles voyagent chiffrées avec la clé de la synchro, que le serveur n'a pas, et le serveur ne fait que les relayer <b>en mémoire</b>, sans jamais les écrire ni sur disque ni en base. Si le transfert des photos échoue, les fiches sont quand même à jour : refaites une synchro. Un PC reçoit les photos mais ne les prend pas.</div>
+
+  <h2>Remplir une connexion en un toucher (Android)</h2>
+  <p>DpW peut remplir l'utilisateur et le mot de passe dans une autre app ou dans une page web, sans copier-coller.</p>
+  <div class="step"><div class="step-num">1</div><div class="step-content"><strong>Une seule fois</strong> : dans les Réglages de DpW, ligne <em>Remplissage automatique</em>, touchez <strong>Activer</strong> et choisissez <strong>Qovi DpW</strong> comme service de saisie automatique. Pour <strong>Chrome</strong>, il faut aussi, une fois, dans Chrome : <em>Paramètres → Saisie automatique des mots de passe → Service de saisie automatique → « Saisie automatique avec un autre service »</em> (les noms des menus peuvent varier selon la version de Chrome). Ce chemin est aussi rappelé sous la ligne <em>Remplissage automatique</em> des Réglages. Samsung Internet et Firefox n'ont besoin de rien.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">Touchez le champ « utilisateur » d'une app ou d'un site : le clavier propose <strong>Remplir avec Qovi DpW</strong>. Touchez-le : DpW s'ouvre (validation Qovi s'il était verrouillé) et montre en tête les fiches de ce site ou de cette app.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Touchez la bonne fiche : l'utilisateur et le mot de passe sont remplis, et vous revenez dans l'app. Pour une app, DpW propose de <strong>retenir</strong> la fiche : la fois suivante, elle sera trouvée directement.</div></div>
+  <div class="box box-ok"><strong>Et la sécurité ?</strong> DpW ne lit jamais ce que contiennent les champs de l'autre app ; il repère seulement où mettre l'utilisateur et le mot de passe. Rien ne part sans votre toucher sur une fiche, et rien n'est gardé par Android.</div>
 
   <h2>Synchroniser vos appareils, sans cloud</h2>
   <div class="step"><div class="step-num">1</div><div class="step-content">Sur les deux appareils, ouvrez DpW avec <strong>le même compte</strong>.</div></div>
@@ -118,7 +134,6 @@ html.lg-fr #lg-en, html.lg-en #lg-fr { display: none; }
   <ul>
     <li><strong>Langue</strong> : FR, DE, IT ou EN.</li>
     <li><strong>Verrouillage après inactivité</strong> : 5 min, 15 min, 30 min, 1 h ou 2 h.</li>
-    <li><strong>Ancien trousseau DpW</strong> (fichier <code>_DpW.aes</code>) : <em>Choisir</em> le fichier, puis <em>Importer</em> avec son ancienne clé. Le fichier d'origine n'est pas modifié.</li>
   </ul>
 
   <div class="box box-sec">
@@ -127,6 +142,7 @@ html.lg-fr #lg-en, html.lg-en #lg-fr { display: none; }
       <li>Le trousseau est stocké <b>uniquement sur vos appareils</b>, chiffré. Rien n'est gardé dans un cloud.</li>
       <li>Il se <b>verrouille seul</b> après une période sans activité (60 minutes par défaut) et DpW revient à l'écran d'ouverture.</li>
       <li>Le bouton de sortie, en haut à gauche, verrouille tout de suite.</li>
+      <li>Sur Android, l'écran de DpW est <b>protégé</b> : pas de capture ni d'enregistrement d'écran, et l'aperçu dans la liste des apps récentes reste noir.</li>
     </ul>
   </div>
 
@@ -181,7 +197,7 @@ wix build windows/installer/Product.wxs -arch x64 -d Ver=&lt;version&gt; -d Rel=
 <span class="c"># Linux (Debian/Ubuntu amd64), puis le paquet .deb</span>
 flutter build linux --release
 bash tool/build_deb.sh &lt;version&gt; &lt;dossier de sortie&gt;
-<span class="c"># Tests : fusion, transfert, import WL, filtre, enveloppes G1</span>
+<span class="c"># Tests : fusion, transfert, filtre, enveloppes G1</span>
 flutter test</pre>
 
   <h3>macOS et iOS</h3>
@@ -329,7 +345,6 @@ adb shell am start -a android.intent.action.VIEW -c android.intent.category.BROW
       <li><b>Mot de passe copié</b> : effacé du presse-papiers après 30 s, et à la fermeture.</li>
       <li><b>Canaux chiffrés et authentifiés</b> : CH4, CH5 et la synchro utilisent l'enveloppe <b>G1</b> = <code>"G1"</code> + base64(nonce 12 + AES-256-GCM + tag 16), avec une clé dérivée par usage (HMAC-SHA256) et le sens du message en données associées. Un message modifié, rejoué dans l'autre sens ou destiné à une autre transaction est refusé. Le tout passe en plus dans TLS.</li>
       <li><b>Retour automatique</b> : l'adresse vient de la fiche du site, jamais de l'app ; seul le GO de CH4 fait foi (section 5).</li>
-      <li><b>Import d'un ancien trousseau WL</b> : texte base64 de IV + AES-256-CBC(contrôle sur 8 octets + JSON), clair en Windows-1252 ou UTF-8.</li>
     </ul>
   </div>
 
@@ -395,15 +410,31 @@ adb shell am start -a android.intent.action.VIEW -c android.intent.category.BROW
   <div class="step"><div class="step-num">1</div><div class="step-content">Enter your Qovi e-mail address. It is remembered for next time; the <strong>✕</strong> next to it forgets it.</div></div>
   <div class="step"><div class="step-num">2</div><div class="step-content">Tap the big entry button.</div></div>
   <div class="step"><div class="step-num">3</div><div class="step-content">Approve the request in the <strong>Qovi</strong> app on your phone. If DpW is on the same phone, Qovi opens by itself, then brings you back to DpW after the approval.</div></div>
+  <div class="box box-info"><strong>“No Qovi phone is ready”</strong>: Qovi is probably closed on your phone. On Android (if Qovi is installed next to DpW) and on iPhone, the button <strong>Open Qovi on this phone, then try again</strong> appears: tap it: DpW retries the opening by itself a few seconds later and Qovi shows you the request to approve (if nothing happens, come back to DpW: the opening restarts).</div>
   <div class="box box-ok"><strong>No master password</strong> to remember: your Qovi approval opens the keychain. The very first opening on a device can take up to a minute.</div>
 
   <h2>Use</h2>
   <ul>
     <li><strong>Search</strong>: type one or more words. “bank ch” finds the entries that contain both words, in the name or in the note, ignoring case and accents. The <strong>✕</strong> clears the search.</li>
-    <li>On each line, four big buttons: <strong>✏</strong> open the entry; <strong>👤</strong> copy the user name; <strong>🔑</strong> copy the password (cleared from the clipboard after 30 seconds); <strong>↗</strong> open the website, if the entry has a web address.</li>
+    <li>On each line, four big buttons: <strong>✏</strong> open the entry; <strong>👤</strong> copy the user name; <strong>🔑</strong> copy the password (cleared from the clipboard after 30 seconds); <strong>↗</strong> open the website, if the entry has a web address; <strong>💳</strong> show the card, if the entry has one (see below).</li>
     <li><strong>+</strong> creates an entry, with a strong password already suggested.</li>
     <li>In the entry: <strong>🗑</strong> deletes, <strong>✓</strong> saves, <strong>←</strong> goes back without saving.</li>
   </ul>
+
+  <h2>Card photo (Android phone or iPhone, or image on a PC)</h2>
+  <p>An entry can keep the photo of a card, front and back: credit, loyalty, insurance or ID card… Handy to show a barcode or a QR code at the checkout.</p>
+  <div class="step"><div class="step-num">1</div><div class="step-content">In the entry, on the <strong>💳</strong> line: tap the camera, place the card inside the frame and shoot. <em>On a PC</em>: click the folder to choose an image (JPEG or PNG), or drop it on the slot; the original image stays on your disk, delete it if you no longer need it.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">Fit the 4 lines on the edges of the card: a dot tilts a line, the middle moves it. Tap the card to confirm: the photo is straightened.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Do the same for the back if needed, then <strong>✓</strong>. Tapping a thumbnail shows it large, with <em>Retake</em> and <em>Delete</em>.</div></div>
+  <p>In the list, the <strong>💳</strong> button shows the front and the back, with the screen at full brightness. Tap a side to show it full screen, ready for a scanner.</p>
+  <div class="box box-ok"><strong>Where are the photos?</strong> On your devices, and nowhere else. Each photo is an <b>encrypted</b> file (AES-256-GCM) in the app's private folder, with a key derived from your Qovi account, separate from the keychain's. A photo is decrypted <b>in memory only</b>, while it is shown, and is gone when DpW locks or goes to the background. The photo never goes into the gallery, the camera's temporary file is deleted at once, and the saved picture has no metadata (no place, date or device). The Qovi server never sees the photos. When you sync, each device sends the other the photos it is missing: they travel encrypted with the sync key, which the server does not have, and the server only relays them <b>in memory</b>, never writing them to disk or to a database. If the photo transfer fails, the entries are up to date anyway: just sync again. A PC receives photos but does not take them.</div>
+
+  <h2>Fill in a login with one tap (Android)</h2>
+  <p>DpW can fill in the username and password in another app or a web page, without copy and paste.</p>
+  <div class="step"><div class="step-num">1</div><div class="step-content"><strong>Once</strong>: in DpW's Settings, <em>Autofill</em> line, tap <strong>Enable</strong> and choose <strong>Qovi DpW</strong> as the autofill service. For <strong>Chrome</strong>, also once, in Chrome: <em>Settings → Autofill services → Autofill using another service</em> (menu names may vary with the Chrome version). This path is also shown under the <em>Autofill</em> line in Settings. Samsung Internet and Firefox need nothing.</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content">Tap the “username” field of an app or a site: the keyboard offers <strong>Fill with Qovi DpW</strong>. Tap it: DpW opens (Qovi approval if it was locked) and lists the entries for that site or app first.</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content">Tap the right entry: the username and password are filled in, and you are back in the app. For an app, DpW offers to <strong>remember</strong> the entry: next time it is found directly.</div></div>
+  <div class="box box-ok"><strong>What about security?</strong> DpW never reads what the other app's fields contain; it only finds where the username and password go. Nothing leaves without your tap on an entry, and Android keeps nothing.</div>
 
   <h2>Synchronise your devices, without any cloud</h2>
   <div class="step"><div class="step-num">1</div><div class="step-content">On both devices, open DpW with <strong>the same account</strong>.</div></div>
@@ -417,7 +448,6 @@ adb shell am start -a android.intent.action.VIEW -c android.intent.category.BROW
   <ul>
     <li><strong>Language</strong>: FR, DE, IT or EN.</li>
     <li><strong>Lock after inactivity</strong>: 5 min, 15 min, 30 min, 1 h or 2 h.</li>
-    <li><strong>Old DpW keychain</strong> (<code>_DpW.aes</code> file): <em>Choose</em> the file, then <em>Import</em> with its old key. The original file is not changed.</li>
   </ul>
 
   <div class="box box-sec">
@@ -426,6 +456,7 @@ adb shell am start -a android.intent.action.VIEW -c android.intent.category.BROW
       <li>The keychain is stored <b>only on your devices</b>, encrypted. Nothing is kept in a cloud.</li>
       <li>It <b>locks by itself</b> after a period without activity (60 minutes by default) and DpW goes back to the opening screen.</li>
       <li>The exit button, top left, locks it at once.</li>
+      <li>On Android, DpW's screen is <b>protected</b>: no screenshot or screen recording, and its preview in the recent apps stays black.</li>
     </ul>
   </div>
 
@@ -480,7 +511,7 @@ wix build windows/installer/Product.wxs -arch x64 -d Ver=&lt;version&gt; -d Rel=
 <span class="c"># Linux (Debian/Ubuntu amd64), then the .deb package</span>
 flutter build linux --release
 bash tool/build_deb.sh &lt;version&gt; &lt;output folder&gt;
-<span class="c"># Tests: merge, transfer, WL import, filter, G1 envelopes</span>
+<span class="c"># Tests: merge, transfer, filter, G1 envelopes</span>
 flutter test</pre>
 
   <h3>macOS and iOS</h3>
@@ -628,7 +659,6 @@ adb shell am start -a android.intent.action.VIEW -c android.intent.category.BROW
       <li><b>Copied password</b>: cleared from the clipboard after 30 s, and on exit.</li>
       <li><b>Encrypted and authenticated channels</b>: CH4, CH5 and synchronisation use the <b>G1</b> envelope = <code>"G1"</code> + base64(nonce 12 + AES-256-GCM + tag 16), with a key derived per use (HMAC-SHA256) and the message direction as associated data. A message that is modified, replayed in the other direction or meant for another transaction is rejected. Everything also goes through TLS.</li>
       <li><b>Automatic return</b>: the address comes from the site record, never from the app; only the CH4 GO counts (section 5).</li>
-      <li><b>Import of an old WL keychain</b>: base64 text of IV + AES-256-CBC(8-byte check + JSON), plain text in Windows-1252 or UTF-8.</li>
     </ul>
   </div>
 

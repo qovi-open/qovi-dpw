@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER main.dart · 2026-11-10 · lot 16 (W6 fenetre libre ; W4 place retenue ; macOS)
+// FILEVER main.dart · 2026-11-20 · lot 23 (W13 : portrait sur telephone)
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'core/win_pos.dart';
@@ -18,6 +19,11 @@ const double kRatio = 360 / 580;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final app = AppState();
+  // W13 (Marc 19.11) : sur telephone, l'app reste en portrait. La vue plein
+  // ecran d'une carte tourne l'IMAGE (RotatedBox), pas l'ecran.
+  if (Platform.isAndroid || Platform.isIOS) {
+    await SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp]);
+  }
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();
     // W4 : reprendre la place de la derniere fermeture, si elle est visible.

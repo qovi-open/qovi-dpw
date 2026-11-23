@@ -2,6 +2,9 @@
     <!-- (01.11.2026, lot 2) reseau (service DpW, Qovi) et camera (scan du QR de synchro) -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- (20.11.2026, lot 27) W17 : apres le remplissage, ramener l'app d'origine
+         au premier plan (moveTaskToFront). Permission normale, sans demande a l'usager. -->
+    <uses-permission android:name="android.permission.REORDER_TASKS"/>
     <application
         android:label="Qovi DpW"
         android:name="${applicationName}"
@@ -45,6 +48,24 @@
                 <data android:pathPrefix="/qovi-retour"/>
             </intent-filter>
         </activity>
+        <!-- W17 (lot 25) : DpW, service de saisie automatique d'Android (a
+             activer par l'usager : Reglages de DpW > Remplissage automatique). -->
+        <service
+            android:name=".DpwAutofillService"
+            android:label="Qovi DpW"
+            android:permission="android.permission.BIND_AUTOFILL_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.autofill.AutofillService"/>
+            </intent-filter>
+            <meta-data android:name="android.autofill" android:resource="@xml/dpw_autofill"/>
+        </service>
+        <!-- W17 : relais invisible dans la tache de l'app d'origine -->
+        <activity
+            android:name=".AutofillActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
@@ -66,5 +87,7 @@
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
         </intent>
+        <!-- (20.11.2026, lot 28) Android 11+ : DpW voit si Qovi est installe (bouton du refus 575) -->
+        <package android:name="ch.wippso.qfa.mob"/>
     </queries>
 </manifest>

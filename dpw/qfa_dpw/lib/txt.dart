@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER txt.dart · 2026-11-18 · lot 19 (W12 : libelle Version)
+// FILEVER txt.dart · 2026-11-20 · lot 28 (bouton Ouvrir Qovi ; lot 27 : WL retire, chemin Chrome ; lot 25 : W17)
 // Tous les textes visibles du client DpW, en quatre langues (decision de
 // Marc 01.11 : les trois langues suisses + anglais US). La langue suit
 // celle de l'appareil (toute autre langue donne l'anglais), sauf si l'usager
@@ -105,25 +105,8 @@ class T {
       'Ein Wechsel der Umgebung sperrt den Schlüsselbund.',
       'Cambiare ambiente blocca il portachiavi.',
       'Changing environment locks the keychain.');
-  static String get oldWl => _p('Ancien trousseau WL (_DpW.aes)', 'Alter WL-Schlüsselbund (_DpW.aes)',
-      'Vecchio portachiavi WL (_DpW.aes)', 'Old WL keychain (_DpW.aes)');
-  static String get oldWlHint => _p('Choisissez le fichier, puis importez-le avec son ancienne clé.',
-      'Wählen Sie die Datei und importieren Sie sie mit ihrem alten Schlüssel.',
-      'Scelga il file, poi lo importi con la sua vecchia chiave.',
-      'Choose the file, then import it with its old key.');
-  static String get choose => _p('Choisir', 'Auswählen', 'Scegli', 'Choose');
-  static String get oldReady => _p('Ancien trousseau (_DpW.aes)', 'Alter Schlüsselbund (_DpW.aes)',
-      'Vecchio portachiavi (_DpW.aes)', 'Old keychain (_DpW.aes)');
-  static String get oldReadyHint => _p('Prêt : importez-le avec son ancienne clé.',
-      'Bereit: mit dem alten Schlüssel importieren.', 'Pronto: lo importi con la vecchia chiave.',
-      'Ready: import it with its old key.');
-  static String get importBtn => _p('Importer', 'Importieren', 'Importa', 'Import');
   static String get version => _p('Version', 'Version', 'Versione', 'Version');
   static String get deviceId => _p('Identifiant du poste', 'Geräte-ID', 'ID del dispositivo', 'Device ID');
-  static String get oldKey => _p('Ancienne clé du trousseau', 'Alter Schlüssel des Schlüsselbunds',
-      'Vecchia chiave del portachiavi', 'Old keychain key');
-  static String get hex64 => _p('64 caractères hexadécimaux', '64 Hexadezimalzeichen', '64 caratteri esadecimali',
-      '64 hexadecimal characters');
   static String get send => _p('Envoyer (afficher le QR)', 'Senden (QR anzeigen)', 'Invia (mostra il QR)',
       'Send (show the QR)');
   static String get receive => _p('Recevoir (scanner le QR)', 'Empfangen (QR scannen)', 'Ricevi (scansiona il QR)',
@@ -153,16 +136,6 @@ class T {
       'Schlüsselbund in den lokalen Speicher der App übernommen.',
       'Portachiavi ripreso nella memoria locale dell’app.',
       'Keychain moved to the app’s local storage.');
-  static String get oldWlType => _p('Ancien trousseau', 'Alter Schlüsselbund', 'Vecchio portachiavi', 'Old keychain');
-  static String get oldPicked => _p('Ancien trousseau prêt : saisissez son ancienne clé pour l’importer.',
-      'Alter Schlüsselbund bereit: alten Schlüssel eingeben, um ihn zu importieren.',
-      'Vecchio portachiavi pronto: inserisca la vecchia chiave per importarlo.',
-      'Old keychain ready: enter its old key to import it.');
-  static String oldReadFail(Object e) => _p('Lecture de l’ancien trousseau impossible ($e).',
-      'Alter Schlüsselbund nicht lesbar ($e).', 'Impossibile leggere il vecchio portachiavi ($e).',
-      'Cannot read the old keychain ($e).');
-  static String get converted => _p('Ancien trousseau converti au format v2.', 'Alter Schlüsselbund ins Format v2 umgewandelt.',
-      'Vecchio portachiavi convertito nel formato v2.', 'Old keychain converted to format v2.');
   static String openFail(Object e) => _p("Impossible d'ouvrir le trousseau ($e).",
       'Schlüsselbund kann nicht geöffnet werden ($e).', 'Impossibile aprire il portachiavi ($e).',
       'Cannot open the keychain ($e).');
@@ -174,6 +147,63 @@ class T {
       'Scannen Sie diesen QR mit DpW auf dem anderen Gerät (10 Minuten gültig).',
       'Scansioni questo QR con DpW sull’altro dispositivo (valido 10 minuti).',
       'Scan this QR with DpW on the other device (valid 10 minutes).');
+  // W17 (lot 25) : remplissage automatique Android
+  static String get yes => _p('Oui', 'Ja', 'Sì', 'Yes');
+  static String fillFor(String t) => _p('Remplir : $t', 'Ausfüllen: $t', 'Compilare: $t', 'Fill in: $t');
+  static String get fillNoMatch => _p('Aucune fiche ne correspond : choisissez-la dans la liste.',
+      'Kein Eintrag passt: Wählen Sie ihn in der Liste.', 'Nessuna scheda corrisponde: la scelga nell’elenco.',
+      'No entry matches: choose it from the list.');
+  static String get fillRemember => _p('Retenir pour cette app ?', 'Für diese App merken?', 'Ricordare per questa app?',
+      'Remember for this app?');
+  static String fillRememberAsk(String nam, String pkg) => _p(
+      'La fiche « $nam » sera proposée directement dans l’app $pkg.',
+      'Der Eintrag „$nam“ wird in der App $pkg direkt vorgeschlagen.',
+      'La scheda «$nam» sarà proposta direttamente nell’app $pkg.',
+      'The entry “$nam” will be offered directly in the app $pkg.');
+  static String get fillSet => _p('Remplissage automatique', 'Automatisches Ausfüllen', 'Compilazione automatica',
+      'Autofill');
+  static String get fillSetHint => _p(
+      'Choisir Qovi DpW comme service de saisie automatique d’Android (une seule fois).',
+      'Qovi DpW als Android-Dienst für automatisches Ausfüllen wählen (einmalig).',
+      'Scegliere Qovi DpW come servizio di compilazione automatica di Android (una volta sola).',
+      'Choose Qovi DpW as the Android autofill service (once).');
+  // W17 (lot 27, chemin releve par Marc sur le S10 le 20.11) : Chrome remplit
+  // lui-meme les mots de passe ; il faut lui dire de passer par Android.
+  static String get fillChrome => _p(
+      'Dans Chrome : Paramètres → Saisie automatique des mots de passe → Service de saisie automatique → « Saisie automatique avec un autre service ».',
+      'In Chrome: Einstellungen → Autofill-Dienste → „Autofill mit einem anderen Dienst“.',
+      'In Chrome: Impostazioni → Servizi di compilazione automatica → «Compilazione automatica con un altro servizio».',
+      'In Chrome: Settings → Autofill services → “Autofill using another service”.');
+  // Lot 28 : bouton sous le refus 575, quand Qovi est sur ce telephone.
+  static String get qoviOpenRetry => _p('Ouvrir Qovi sur ce téléphone, puis réessayer',
+      'Qovi auf diesem Telefon öffnen und erneut versuchen',
+      'Aprire Qovi su questo telefono e riprovare',
+      'Open Qovi on this phone, then try again');
+  static String get fillActivate => _p('Activer', 'Aktivieren', 'Attivare', 'Enable');
+  // W18 (lot 23) : image du disque sur PC
+  static String get cardPickFront => _p('Choisir ou glisser l’image du recto', 'Bild der Vorderseite wählen oder hierher ziehen',
+      'Scegliere o trascinare l’immagine del fronte', 'Choose or drop the front image');
+  static String get cardPickBack => _p('Choisir ou glisser l’image du verso', 'Bild der Rückseite wählen oder hierher ziehen',
+      'Scegliere o trascinare l’immagine del retro', 'Choose or drop the back image');
+  static String get cardImgType => _p('Images', 'Bilder', 'Immagini', 'Images');
+  static String get cardTooBig => _p('Image trop grande (20 Mo au plus).', 'Bild zu groß (höchstens 20 MB).',
+      'Immagine troppo grande (al massimo 20 MB).', 'Image too large (20 MB at most).');
+  static String get cardNotImage => _p('Ce fichier n’est pas une image lisible (JPEG ou PNG).',
+      'Diese Datei ist kein lesbares Bild (JPEG oder PNG).', 'Questo file non è un’immagine leggibile (JPEG o PNG).',
+      'This file is not a readable image (JPEG or PNG).');
+  static String get cardOrigLeft => _p('L’image d’origine est toujours sur votre disque, en clair : supprimez-la si elle ne sert plus.',
+      'Das Originalbild liegt weiterhin unverschlüsselt auf Ihrem Datenträger: Löschen Sie es, wenn Sie es nicht mehr brauchen.',
+      'L’immagine originale è ancora sul disco, in chiaro: la elimini se non serve più.',
+      'The original image is still on your disk, unencrypted: delete it if you no longer need it.');
+  // W14 etape 2 (lot 22) : photos de carte apres la synchro des fiches
+  static String photosStep(int d, int t) =>
+      _p('Photos : $d/$t', 'Fotos: $d/$t', 'Foto: $d/$t', 'Photos: $d/$t');
+  static String photosOk(int s, int g) => _p('Photos : $s envoyée(s), $g reçue(s).',
+      'Fotos: $s gesendet, $g empfangen.', 'Foto: $s inviate, $g ricevute.', 'Photos: $s sent, $g received.');
+  static String get photosFail => _p('Photos non transférées : refais une synchro (les fiches, elles, sont à jour).',
+      'Fotos nicht übertragen: Synchronisierung wiederholen (die Einträge sind aktuell).',
+      'Foto non trasferite: ripeti la sincronizzazione (le schede sono aggiornate).',
+      'Photos not transferred: sync again (the entries themselves are up to date).');
   static String get syncSwap => _p('Échange des trousseaux…', 'Schlüsselbunde werden ausgetauscht…',
       'Scambio dei portachiavi…', 'Exchanging keychains…');
   static String saveFail(Object e) => _p("Échec de l'enregistrement du trousseau ($e).",
@@ -184,17 +214,6 @@ class T {
       'Password copiata (cancellata tra 30 s).', 'Password copied (cleared in 30 s).');
   static String get noUrl => _p('Pas d’adresse web valide pour cette clé.', 'Keine gültige Webadresse für diesen Schlüssel.',
       'Nessun indirizzo web valido per questa chiave.', 'No valid web address for this key.');
-  static String imported(int n, int del) => _p(
-      '$n ${_n(n, 'clé importée', 'clés importées')} ; $del ${_n(del, 'ancien fichier supprimé', 'anciens fichiers supprimés')}. '
-          'Synchronisez ensuite vos autres appareils (⟳).',
-      '$n Schlüssel importiert; $del ${_n(del, 'alte Datei gelöscht', 'alte Dateien gelöscht')}. '
-          'Synchronisieren Sie danach Ihre anderen Geräte (⟳).',
-      '$n ${_n(n, 'chiave importata', 'chiavi importate')}; $del ${_n(del, 'vecchio file eliminato', 'vecchi file eliminati')}. '
-          'Sincronizzi poi gli altri dispositivi (⟳).',
-      '$n ${_n(n, 'key imported', 'keys imported')}; $del ${_n(del, 'old file deleted', 'old files deleted')}. '
-          'Then sync your other devices (⟳).');
-  static String get importFail => _p("Échec de l'import de l'ancien trousseau.", 'Import des alten Schlüsselbunds fehlgeschlagen.',
-      'Importazione del vecchio portachiavi non riuscita.', 'Importing the old keychain failed.');
 
   // ── Bilan de synchro ────────────────────────────────────────────────
   static String get upToDate => _p('Trousseau déjà à jour.', 'Schlüsselbund bereits aktuell.',
@@ -250,6 +269,11 @@ class T {
                 ? ''
                 : _p(' Attendez $waits et relancez.', ' Warten Sie $waits und versuchen Sie es erneut.',
                     ' Attenda $waits e riprovi.', ' Wait $waits and try again.')),
+        // Lot 23 (Marc 20.11) : 575 = aucun telephone Qovi pret pour ce serveur.
+        575 => _p('Aucun téléphone Qovi n’est prêt : ouvrez Qovi sur votre téléphone, vérifiez qu’il est sur le même environnement que DpW (Test ou Production), puis réessayez.',
+            'Kein Qovi-Telefon ist bereit: Öffnen Sie Qovi auf Ihrem Telefon, prüfen Sie, dass es dieselbe Umgebung wie DpW verwendet (Test oder Produktion), und versuchen Sie es erneut.',
+            'Nessun telefono Qovi è pronto: apra Qovi sul telefono, verifichi che usi lo stesso ambiente di DpW (Test o Produzione) e riprovi.',
+            'No Qovi phone is ready: open Qovi on your phone, check that it uses the same environment as DpW (Test or Production), then try again.'),
         _ => null,
       };
   static String dpwDown(String h) => _p('Service DpW injoignable ($h).', 'DpW-Dienst nicht erreichbar ($h).',
@@ -303,18 +327,34 @@ class T {
       'Keychain unreadable with this account’s key (or file modified).');
   static String get badContent => _p('Contenu du trousseau invalide.', 'Inhalt des Schlüsselbunds ungültig.',
       'Contenuto del portachiavi non valido.', 'Invalid keychain content.');
-  static String get oldWrongKey => _p('Ancien trousseau illisible avec la clé de ce compte.',
-      'Alter Schlüsselbund mit dem Schlüssel dieses Kontos unlesbar.',
-      'Vecchio portachiavi illeggibile con la chiave di questo account.',
-      'Old keychain unreadable with this account’s key.');
-  static String get oldKeyBad => _p('Ancien trousseau illisible avec cette ancienne clé.',
-      'Alter Schlüsselbund mit diesem alten Schlüssel unlesbar.',
-      'Vecchio portachiavi illeggibile con questa vecchia chiave.',
-      'Old keychain unreadable with this old key.');
-  static String get oldKey64 => _p("L'ancienne clé doit compter 64 caractères hexadécimaux.",
-      'Der alte Schlüssel muss 64 Hexadezimalzeichen haben.',
-      'La vecchia chiave deve avere 64 caratteri esadecimali.',
-      'The old key must be 64 hexadecimal characters.');
-  static String noOld(String f) => _p('Aucun ancien trousseau ($f) dans ce dossier.', 'Kein alter Schlüsselbund ($f) in diesem Ordner.',
-      'Nessun vecchio portachiavi ($f) in questa cartella.', 'No old keychain ($f) in this folder.');
+
+  // ── W14 (lot 20) : photo de carte ───────────────────────────────────
+  static String get card => _p('Carte', 'Karte', 'Carta', 'Card');
+  static String get cardShow => _p('Afficher la carte', 'Karte anzeigen', 'Mostra la carta', 'Show the card');
+  static String get cardFront => _p('Recto', 'Vorderseite', 'Fronte', 'Front');
+  static String get cardBack => _p('Verso', 'Rückseite', 'Retro', 'Back');
+  static String get cardShootFront => _p('Photographier le recto', 'Vorderseite fotografieren',
+      'Fotografa il fronte', 'Photograph the front');
+  static String get cardShootBack => _p('Photographier le verso', 'Rückseite fotografieren',
+      'Fotografa il retro', 'Photograph the back');
+  static String get cardRetake => _p('Reprendre la photo', 'Foto neu aufnehmen', 'Rifai la foto', 'Retake the photo');
+  static String get cardDelete => _p('Supprimer la photo', 'Foto löschen', 'Elimina la foto', 'Delete the photo');
+  static String get cardDelAsk => _p('Supprimer cette photo ?', 'Dieses Foto löschen?', 'Eliminare questa foto?',
+      'Delete this photo?');
+  static String get cardElsewhere => _p('Photo prise sur un autre appareil.', 'Foto auf einem anderen Gerät aufgenommen.',
+      'Foto scattata su un altro dispositivo.', 'Photo taken on another device.');
+  static String get cardUnreadable => _p('Photo illisible.', 'Foto unlesbar.', 'Foto illeggibile.', 'Unreadable photo.');
+  static String cardSaveFail(Object e) => _p('Photo non enregistrée : $e', 'Foto nicht gespeichert: $e',
+      'Foto non salvata: $e', 'Photo not saved: $e');
+  static String get camHint => _p('Placez la carte dans le cadre.', 'Legen Sie die Karte in den Rahmen.',
+      'Metta la carta nella cornice.', 'Place the card inside the frame.');
+  static String get camShoot => _p('Prendre la photo', 'Foto aufnehmen', 'Scatta la foto', 'Take the photo');
+  static String get camNone => _p('Aucune caméra disponible.', 'Keine Kamera verfügbar.',
+      'Nessuna fotocamera disponibile.', 'No camera available.');
+  static String camFail(Object e) => _p('Caméra : $e', 'Kamera: $e', 'Fotocamera: $e', 'Camera: $e');
+  static String get linesHint => _p('Rond : incliner la droite. Milieu : la déplacer. Touchez la carte pour valider.',
+      'Kreis: Linie neigen. Mitte: verschieben. Karte antippen zum Bestätigen.',
+      'Cerchio: inclina la linea. Centro: spostala. Tocchi la carta per confermare.',
+      'Dot: tilt the line. Middle: move it. Tap the card to confirm.');
+  static String get cornersOk => _p('Valider', 'Bestätigen', 'Conferma', 'Confirm');
 }

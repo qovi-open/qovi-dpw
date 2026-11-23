@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER merge.dart · 2026-11-10 · lot 17 (dates de creation ; filtres chiffres et synchronises)
+// FILEVER merge.dart · 2026-11-20 · lot 25 (copie de conflit : apps associees W17)
 // Fusion de deux trousseaux (regle B de Marc, 01.11.2026) :
 //  - une entree changee d'un seul cote depuis la derniere synchro : on prend
 //    le changement ;
@@ -16,7 +16,11 @@
 //  - lot 17 : FILTRES enregistres (W2), dans le trousseau donc chiffres : par
 //    filtre, la modification la plus recente gagne ; un filtre detruit l'est
 //    partout (trace `fdel`, meme regle que les entrees). Un appareil plus
-//    ancien ignore filtres et dates sans rien effacer chez les autres.
+//    ancien ignore filtres et dates sans rien effacer chez les autres ;
+//  - lot 20 (W14) : les references de photos de carte (Entry.crd) font partie
+//    de l'empreinte, donc suivent les memes regles ; la copie de conflit garde
+//    les photos et les champs inconnus de la version perdante. La fusion ne
+//    supprime JAMAIS de fichier photo (seules les actions locales le font).
 // La fusion est SYMETRIQUE : merge(a, b) et merge(b, a) donnent le meme
 // trousseau, si bien que les deux appareils finissent identiques.
 import 'dart:convert';
@@ -152,7 +156,8 @@ Entry _copyOf(Entry loser) => Entry(
     id: sha256.convert(utf8.encode('${loser.id}|${loser.hash}')).toString().substring(0, 32),
     nam: '${loser.nam} (copie du ${_stamp(loser.mod)})',
     url: loser.url, who: loser.who, pass: loser.pass, note: loser.note,
-    mod: loser.mod, use: loser.use, cre: loser.cre);
+    mod: loser.mod, use: loser.use, cre: loser.cre,
+    crd: List.of(loser.crd), apk: List.of(loser.apk), extra: Map.of(loser.extra));
 
 /// Fusionne [local] et [remote]. [now] : pour l'expiration des traces.
 MergeResult mergeVaults(VaultData local, VaultData remote, {DateTime? now}) {

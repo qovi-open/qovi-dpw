@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER pages.dart · 2026-11-18 · lot 19 (W12 : version en bas des reglages)
+// FILEVER pages.dart · 2026-11-20 · lot 32 (clavier lu sur la fenetre, pas sous le Scaffold) ; lot 31 (note au-dessus du clavier ; lot 29 : bouton Ouvrir Qovi ; lot 28 : 575)
 // Les ecrans. Meme code pour Windows et Android : la fenetre Windows a le
 // ratio d'un telephone, donc aucune mise en page "bureau" a part.
 // Planche v3 validee par Marc le 01.11 :
@@ -10,7 +10,11 @@
 //  - fiche : textes et boutons plus grands, 🗑 et ✓ en haut a droite, la note
 //    descend jusqu'en bas de l'ecran ;
 //  - connexion : gros bouton SignIn, adresse toujours retenue, ✕ pour l'oublier ;
-//  - reglages : choix de la langue (FR, DE, IT, EN).
+//  - reglages : choix de la langue (FR, DE, IT, EN) ;
+//  - W14 (lot 20) : fiche = ligne « Carte » (recto, verso) entre le mot de
+//    passe et la note ; liste = 5e bouton 💳 si la fiche a une carte.
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -18,7 +22,10 @@ import '../env.dart';
 import '../txt.dart';
 import '../version.dart';
 import '../vault/entry.dart';
+import '../vault/vault.dart';
 import 'app_state.dart';
+import 'card_ui.dart';
+import 'fill_page.dart';
 import 'logo.dart';
 import 'style.dart';
 import 'sync_page.dart';
@@ -60,7 +67,10 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
   /// Au retour au premier plan (telephone), le delai a pu passer en arriere-plan.
   @override
   void didChangeAppLifecycleState(AppLifecycleState s) {
-    if (s == AppLifecycleState.resumed) app.checkIdle();
+    if (s == AppLifecycleState.resumed) {
+      app.checkIdle();
+      app.onResume(); // lot 28 : relance du login apres « Ouvrir Qovi »
+    }
   }
 
   /// Une information (copie faite, synchro terminee…) s'affiche une fois
@@ -124,6 +134,7 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
           Screen.edit => EditPage(key: ValueKey(app.editing!.id), app: app, entry: app.editing!),
           Screen.net => NetPage(app: app),
           Screen.sync => SyncPage(app: app),
+          Screen.fill => FillPage(app: app),
         };
         return Listener(
           behavior: HitTestBehavior.translucent,
@@ -254,11 +265,23 @@ class _LoginPageState extends State<LoginPage> {
         SqBtn(icon: Icons.close, tip: T.forgetEmail, onTap: app.busy ? null : _forget),
       ]),
       const SizedBox(height: 28),
-      if (!app.busy)
+      if (!app.busy) ...[
+        // Lot 28 : refus 575 et Qovi present sur ce telephone. Lot 29 (Marc) :
+        // entre l'adresse et le bouton d'entree, pour ne pas etre cache par la main.
+        if (app.qoviHelp) ...[
+          Center(
+            child: FilledButton.icon(
+              onPressed: app.openQoviRetry,
+              icon: const Icon(Icons.open_in_new),
+              label: Text(T.qoviOpenRetry, textAlign: TextAlign.center),
+            ),
+          ),
+          const SizedBox(height: 28),
+        ],
         Center(
           child: SqBtn(icon: Icons.login, tip: T.open, size: 130, onTap: _go, child: const SignInImg(size: 92)),
-        )
-      else ...[
+        ),
+      ] else ...[
         const Center(child: CircularProgressIndicator(color: Dpw.red)),
         const SizedBox(height: 14),
         Text(app.status, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, color: Dpw.txt)),
@@ -484,6 +507,8 @@ class _EntryCard extends StatelessWidget {
           SqBtn(icon: Icons.person_outline, tip: T.copyWho, onTap: () => app.copyWho(e)),
           SqBtn(icon: Icons.key_outlined, tip: T.copyPass, onTap: () => app.copyPass(e)),
           web ? SqBtn(icon: Icons.open_in_new, tip: T.openSite, onTap: () => app.openUrl(e)) : const SqGap(),
+          // W14 (lot 20) : acces rapide a la carte (recto et verso, luminosite au maximum).
+          if (e.crd.isNotEmpty) SqBtn(icon: Icons.credit_card, tip: T.cardShow, onTap: () => showCardQuick(context, app, e)),
         ]),
       ]),
     );
@@ -526,7 +551,7 @@ class EditPage extends StatefulWidget {
   State<EditPage> createState() => _EditPageState();
 }
 
-class _EditPageState extends State<EditPage> {
+class _EditPageState extends State<EditPage> with WidgetsBindingObserver {
   static const double _b = 56; // boutons de la fiche
   static const _fs = TextStyle(fontSize: 19, color: Dpw.txt);
 
@@ -537,11 +562,56 @@ class _EditPageState extends State<EditPage> {
   late final _note = TextEditingController(text: widget.entry.note);
   bool _show = false;
 
+  /// Lot 31 (Marc 20.11) : pendant la saisie de la note, le clavier la
+  /// recouvrait. Quand la note a le focus ET que le clavier est ouvert, les
+  /// champs du haut se retirent (comme s'ils avaient defile) ; ils reviennent
+  /// des que le clavier se ferme ou que le focus quitte la note.
+  /// Lot 32 : le Scaffold de l'app retire la hauteur du clavier du MediaQuery
+  /// de son contenu (il redimensionne a la place), donc
+  /// MediaQuery.viewInsetsOf y vaut toujours 0. On lit la hauteur du clavier
+  /// sur la fenetre elle-meme (View), et didChangeMetrics redessine la page
+  /// quand le clavier s'ouvre ou se ferme.
+  final FocusNode _noteFocus = FocusNode();
+  bool get _kbOpen => View.of(context).viewInsets.bottom > 0;
+
+  /// W14 (lot 20) : references de la carte telles qu'affichees, photos prises
+  /// pendant cette edition, et trousseau (garde pour le menage apres un
+  /// verrouillage).
+  late List<String> _crd = List.of(widget.entry.crd);
+  final Set<String> _created = {};
+  bool _saved = false;
+  Vault? _vault;
+
+  @override
+  void initState() {
+    super.initState();
+    _vault = widget.app.vault;
+    _noteFocus.addListener(_onNoteFocus);
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  void _onNoteFocus() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
     for (final c in [_nam, _url, _who, _pass, _note]) {
       c.dispose();
     }
+    WidgetsBinding.instance.removeObserver(this);
+    _noteFocus.removeListener(_onNoteFocus);
+    _noteFocus.dispose();
+    // W14 : photos prises puis abandonnees (fiche pas enregistree, ou photo
+    // remplacee avant l'enregistrement) : leur fichier disparait.
+    final keep = _saved ? _crd.toSet() : <String>{};
+    final v = _vault;
+    if (v != null) v.dropIfOrphan(_created.where((x) => !keep.contains(x)));
     super.dispose();
   }
 
@@ -553,7 +623,8 @@ class _EditPageState extends State<EditPage> {
     ..url = _url.text.trim()
     ..who = _who.text
     ..pass = _pass.text
-    ..note = _note.text;
+    ..note = _note.text
+    ..crd = List.of(_crd);
 
   Future<void> _save() async {
     final c = _cur();
@@ -562,7 +633,9 @@ class _EditPageState extends State<EditPage> {
       ..url = c.url
       ..who = c.who
       ..pass = c.pass
-      ..note = c.note;
+      ..note = c.note
+      ..crd = c.crd;
+    _saved = true;
     await widget.app.save(e);
   }
 
@@ -607,6 +680,7 @@ class _EditPageState extends State<EditPage> {
     final passActs = _isNew
         ? [_btn(Icons.autorenew, T.generate, () => setState(() => _pass.text = Entry.newPassword())), eye]
         : [eye, _btn(Icons.copy, T.copyPass, () => app.copyPass(_cur()))];
+    final noteMode = _noteFocus.hasFocus && _kbOpen;
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
       child: Column(children: [
@@ -616,12 +690,28 @@ class _EditPageState extends State<EditPage> {
           if (!_isNew) ...[_btn(Icons.delete_outline, T.delete, _delete), const SizedBox(width: 10)],
           _btn(Icons.check, T.save, _save),
         ]),
-        const SizedBox(height: 16),
-        _field(Icons.label_outline, T.name, _nam, const []),
-        _field(Icons.public, T.site, _url, [_btn(Icons.open_in_new, T.openSite, () => app.openUrl(_cur()))],
-            kb: TextInputType.url),
-        _field(Icons.person_outline, T.who, _who, [_btn(Icons.copy, T.copyWho, () => app.copyWho(_cur()))]),
-        _field(Icons.key_outlined, T.pass, _pass, passActs, obscure: !_show),
+        // Lot 31 : retires (sans perdre leur contenu) pendant la saisie de la note.
+        Offstage(
+          offstage: noteMode,
+          child: Column(children: [
+            const SizedBox(height: 16),
+            _field(Icons.label_outline, T.name, _nam, const []),
+            _field(Icons.public, T.site, _url, [_btn(Icons.open_in_new, T.openSite, () => app.openUrl(_cur()))],
+                kb: TextInputType.url),
+            _field(Icons.person_outline, T.who, _who, [_btn(Icons.copy, T.copyWho, () => app.copyWho(_cur()))]),
+            _field(Icons.key_outlined, T.pass, _pass, passActs, obscure: !_show),
+            if (CardRow.visible(_crd))
+              CardRow(
+                app: app,
+                ids: _crd,
+                size: _b,
+                lead: _lead(Icons.credit_card, T.card),
+                onChanged: (l) => setState(() => _crd = l),
+                onCreated: _created.add,
+              ),
+          ]),
+        ),
+        if (noteMode) const SizedBox(height: 8),
         // La note descend jusqu'en bas de l'ecran.
         Expanded(
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -630,6 +720,7 @@ class _EditPageState extends State<EditPage> {
             Expanded(
               child: TextField(
                 controller: _note,
+                focusNode: _noteFocus,
                 style: _fs,
                 expands: true,
                 maxLines: null,
@@ -720,17 +811,12 @@ class NetPage extends StatelessWidget {
           child: Text(T.envLocks),
         ),
       const Divider(),
-      if (app.unlocked && !app.hasOldVault)
+      // W17 (lot 25) : activer DpW comme service de saisie automatique.
+      if (Platform.isAndroid)
         ListTile(
-          title: Text(T.oldWl),
-          subtitle: Text(T.oldWlHint),
-          trailing: TextButton(onPressed: app.pickOldVault, child: Text(T.choose)),
-        ),
-      if (app.hasOldVault)
-        ListTile(
-          title: Text(T.oldReady),
-          subtitle: Text(T.oldReadyHint),
-          trailing: TextButton(onPressed: () => _askOldKey(context), child: Text(T.importBtn)),
+          title: Text(T.fillSet),
+          subtitle: Text('${T.fillSetHint}\n${T.fillChrome}'),
+          trailing: TextButton(onPressed: app.openFillSettings, child: Text(T.fillActivate)),
         ),
       ListTile(
         title: Text(T.deviceId),
@@ -742,28 +828,5 @@ class NetPage extends StatelessWidget {
         subtitle: Text(dpwVerLabel),
       ),
     ]);
-  }
-
-  Future<void> _askOldKey(BuildContext context) async {
-    final ctl = TextEditingController();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text(T.oldKey),
-        content: TextField(
-          controller: ctl,
-          obscureText: true,
-          autofocus: true,
-          decoration: InputDecoration(labelText: T.hex64),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(T.cancel)),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(T.importBtn)),
-        ],
-      ),
-    );
-    final key = ctl.text;
-    ctl.dispose();
-    if (ok == true) await app.importOld(key);
   }
 }

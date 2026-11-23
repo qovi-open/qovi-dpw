@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- W17 (lot 25) : DpW, service de saisie automatique d'Android -->
+<autofill-service xmlns:android="http://schemas.android.com/apk/res/android" />

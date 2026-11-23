@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Marc Gandar
-// FILEVER app_state.dart · 2026-11-10 · lot 17 (filtres enregistres W2/W3 ; dates W7)
+// FILEVER app_state.dart · 2026-11-20 · lot 31 (575 : bouton aussi sur iPhone ; lot 30 : lien de la demande a venir ; lot 29)
 // Etat de l'application. La cle du trousseau vit ICI, en memoire seulement,
 // jusqu'au verrouillage ou a la fermeture de l'app.
 import 'dart:async';
 import 'dart:io';
 
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart' show PaintingBinding;
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -22,7 +22,13 @@ import '../txt.dart';
 import '../vault/entry.dart';
 import '../vault/vault.dart';
 
-enum Screen { login, folder, list, edit, net, sync }
+enum Screen { login, folder, list, edit, net, sync, fill }
+
+/// W17 (lot 25) : demande de remplissage venue d'une autre app (Android).
+class FillReq {
+  FillReq(this.web, this.pkg);
+  final String web, pkg;
+}
 
 /// Minuscules sans accents, pour le filtre.
 String foldText(String s) {
@@ -62,6 +68,13 @@ class AppState extends ChangeNotifier {
   String status = '';
   String? error;
   String? info;
+
+  /// Lot 28 (essai de Marc 20.11) : refus 575 sur Android avec Qovi installe
+  /// sur ce telephone -> bouton « Ouvrir Qovi, puis reessayer ».
+  bool qoviHelp = false;
+  bool _retryOnResume = false;
+  String? _preAct; // lot 30 : identifiant de la demande deja annoncee a Qovi
+  static const _qoviCh = MethodChannel('dpw/qovi');
   String filter = '';
   Entry? editing;
   bool _showNet = false;
@@ -82,6 +95,7 @@ class AppState extends ChangeNotifier {
   Screen get screen {
     if (_showNet) return Screen.net;
     if (vault == null) return _sok != null ? Screen.folder : Screen.login;
+    if (fill != null) return Screen.fill; // W17 : apres la validation Qovi
     if (_showSync) return Screen.sync;
     return editing != null ? Screen.edit : Screen.list;
   }
@@ -90,7 +104,88 @@ class AppState extends ChangeNotifier {
     cfg = await LocalCfg.load();
     applyLang(cfg!.lang);
     _idle ??= Timer.periodic(const Duration(seconds: 20), (_) => checkIdle());
+    _initFill();
     notifyListeners();
+  }
+
+  // ── W17 (lot 25) : remplissage automatique Android ─────────────────────
+  // Le service Android (DpwAutofillService.kt) ouvre DpW avec le domaine du
+  // site ou le paquet de l'app ; la fiche choisie repart par ce canal. Le
+  // mot de passe ne quitte DpW qu'apres le toucher de l'usager sur la fiche.
+  static const _fillCh = MethodChannel('dpw/autofill');
+  FillReq? fill;
+
+  void _initFill() {
+    if (!Platform.isAndroid) return;
+    _fillCh.setMethodCallHandler((c) async {
+      if (c.method == 'request') _setFill(c.arguments);
+      return null;
+    });
+    _fillCh.invokeMethod<Object?>('pending').then(_setFill, onError: (_) {});
+  }
+
+  void _setFill(Object? a) {
+    if (a is! Map) return;
+    String clean(Object? v) {
+      final t = '${v ?? ''}'.trim();
+      return t.length > 253 ? t.substring(0, 253) : t;
+    }
+
+    _set(() {
+      fill = FillReq(clean(a['web']), clean(a['pkg']));
+      _showNet = false; // lot 26 : la page des reglages ne passe plus devant (essai de Marc)
+    });
+  }
+
+  // Lot 26 (Marc 20.11) : sites en deux pages (email puis mot de passe) :
+  // la fiche choisie juste avant pour le meme site ou la meme app revient en
+  // tete pendant 2 minutes. En memoire seulement, oubliee au verrouillage.
+  String? _lastFillId;
+  String _lastFillKey = '';
+  DateTime? _lastFillAt;
+
+  static String _fillKey(FillReq f) => f.web.isNotEmpty ? 'w:${f.web}' : 'p:${f.pkg}';
+
+  /// Identifiant de la fiche choisie il y a moins de 2 min pour [f], sinon null.
+  String? recentFill(FillReq f) {
+    final at = _lastFillAt;
+    if (at == null || _lastFillId == null || _lastFillKey != _fillKey(f)) return null;
+    return DateTime.now().difference(at) < const Duration(minutes: 2) ? _lastFillId : null;
+  }
+
+  /// La fiche [e] part vers l'app ; [remember] l'associe au paquet de l'app.
+  Future<void> fillWith(Entry e, {bool remember = false}) async {
+    final f = fill;
+    if (f == null) return;
+    if (remember && f.pkg.isNotEmpty && !e.apk.contains(f.pkg) && vault != null) {
+      final c = e.copy()
+        ..apk = Entry.cleanApks([...e.apk, f.pkg])
+        ..mod = DateTime.now().toUtc();
+      await _guard(() => vault!.upsert(c));
+    }
+    _lastFillId = e.id;
+    _lastFillKey = _fillKey(f);
+    _lastFillAt = DateTime.now();
+    try {
+      await _fillCh.invokeMethod<void>('fill', {'who': e.who, 'pass': e.pass});
+    } catch (_) {
+      // l'app d'origine a disparu : rien a remplir
+    }
+    _set(() => fill = null);
+  }
+
+  Future<void> fillCancel() async {
+    try {
+      await _fillCh.invokeMethod<void>('cancel');
+    } catch (_) {}
+    _set(() => fill = null);
+  }
+
+  /// Ouvre la page Android « service de saisie automatique ».
+  Future<void> openFillSettings() async {
+    try {
+      await _fillCh.invokeMethod<void>('settings');
+    } catch (_) {}
   }
 
   void _set(VoidCallback f) {
@@ -101,7 +196,7 @@ class AppState extends ChangeNotifier {
   // ── Connexion ──────────────────────────────────────────────────────────
   static final _mail = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
-  Future<void> login(String email, bool keep) async {
+  Future<void> login(String email, bool keep, {String? act}) async {
     final c = cfg!;
     email = email.trim();
     if (!_mail.hasMatch(email)) {
@@ -117,14 +212,19 @@ class AppState extends ChangeNotifier {
       error = null;
       info = null;
       status = '';
+      qoviHelp = false;
     });
     final cli = AloneClient(env, c.mobU);
     _cli = cli;
     try {
-      _sok = await cli.run(email, (m) => _set(() => status = m));
+      _sok = await cli.run(email, (m) => _set(() => status = m), preset: act);
       await _openVault();
     } on AloneError catch (e) {
       error = e.msg;
+      // Lot 31 (DpW.12, Marc 20.11) : sur iPhone, DpW ne peut pas savoir si Qovi
+      // est installe : bouton toujours propose (lien https : Qovi s'il est la,
+      // sinon la page de qovi.ch qui propose de l'installer).
+      if (e.tip == 575) qoviHelp = Platform.isIOS || await _qoviHere();
     } catch (_) {
       error = T.loginFailed;
     } finally {
@@ -136,6 +236,74 @@ class AppState extends ChangeNotifier {
   }
 
   void cancelLogin() => _cli?.cancel();
+
+  /// Lot 28 : Qovi est-il installe sur ce telephone ? (Android seulement ;
+  /// sur iPhone, DpW ne peut pas le savoir sans schema d'adresse de Qovi.)
+  Future<bool> _qoviHere() async {
+    if (!Platform.isAndroid) return false;
+    try {
+      return await _qoviCh.invokeMethod<bool>('has') ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Lot 28 : ouvre Qovi (pour qu'il se connecte) ; au retour dans DpW, le
+  /// login est relance une fois, tout seul (onResume).
+  /// Lot 29 (essai de Marc 20.11 : il fallait revenir a la main) : DpW relance
+  /// lui-meme le login 3 s apres, en arriere-plan ; Qovi est alors en ligne,
+  /// la demande de vote lui arrive et son retour automatique ramene a DpW.
+  /// Si Android a endormi DpW entre-temps, onResume reste le filet.
+  /// Lot 30 (essai de Marc 20.11 : pas de retour Qovi -> DpW) : relance en
+  /// arriere-plan, DpW ne peut plus ouvrir Qovi sur la demande ; or Qovi ne
+  /// revient a l'app que si le lien de CETTE demande lui est arrive (#ret2).
+  /// DpW tire donc l'identifiant (g.u) maintenant, ouvre Qovi par le lien
+  /// `/app/auth?act=<g.u>` (au premier plan, permis), puis relance avec ce g.u.
+  Future<void> openQoviRetry() async {
+    var ok = false;
+    final act = randUuid();
+    try {
+      ok = await launchUrl(qoviAuthUri(env.api, act), mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    if (!ok) {
+      try {
+        ok = await _qoviCh.invokeMethod<bool>('open') ?? false;
+      } catch (_) {}
+    }
+    _preAct = ok ? act : null;
+    _set(() {
+      qoviHelp = false;
+      if (ok) {
+        _retryOnResume = true;
+        error = null;
+      }
+    });
+    if (ok) {
+      Timer(const Duration(seconds: 3), () {
+        if (!_retryOnResume) return; // deja relance au retour
+        _retryOnResume = false;
+        final c = cfg;
+        if (c == null || busy || unlocked || c.email.isEmpty) return;
+        unawaited(login(c.email, true, act: _takeAct()));
+      });
+    }
+  }
+
+  /// Retour au premier plan : relance du login demandee par openQoviRetry.
+  void onResume() {
+    if (!_retryOnResume) return;
+    _retryOnResume = false;
+    final c = cfg;
+    if (c == null || busy || unlocked || c.email.isEmpty) return;
+    unawaited(login(c.email, true, act: _takeAct())); // comme le bouton de la page de connexion
+  }
+
+  /// L'identifiant annonce a Qovi ne sert qu'une fois.
+  String? _takeAct() {
+    final a = _preAct;
+    _preAct = null;
+    return a;
+  }
 
   /// Dossier PRIVE de l'app (lot 2d, decision de Marc 01.11) : le trousseau vit
   /// sur l'appareil, invisible de l'usager ; les appareils se synchronisent par QR.
@@ -154,11 +322,9 @@ class AppState extends ChangeNotifier {
     // Reprise unique de l'ancien dossier choisi a la main (lot 1, ex. Dropbox).
     final old = cfg!.vaultDir;
     if (old.isNotEmpty && old != d) {
-      for (final n in [kVaultV2, kVaultWl]) {
-        final src = File('$old${Platform.pathSeparator}$n');
-        final dst = File('$d${Platform.pathSeparator}$n');
-        if (await src.exists() && !await dst.exists()) await src.copy(dst.path);
-      }
+      final src = File('$old${Platform.pathSeparator}$kVaultV2');
+      final dst = File('$d${Platform.pathSeparator}$kVaultV2');
+      if (await src.exists() && !await dst.exists()) await src.copy(dst.path);
       cfg!.vaultDir = '';
       await cfg!.save();
       info = T.movedLocal;
@@ -173,7 +339,7 @@ class AppState extends ChangeNotifier {
   Future<void> _takeRootVault(String base, String d) async {
     final sep = Platform.pathSeparator;
     if (await File('$d$sep$kVaultV2').exists()) return;
-    final names = [kVaultV2, for (var i = 1; i <= kBackups; i++) '$kVaultV2.bak$i', kVaultWl];
+    final names = [kVaultV2, for (var i = 1; i <= kBackups; i++) '$kVaultV2.bak$i'];
     for (final n in names) {
       final src = File('$base$sep$n');
       if (await src.exists() && !await File('$d$sep$n').exists()) await src.rename('$d$sep$n');
@@ -209,27 +375,11 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Choisit un ancien trousseau WL (_DpW.aes) pour l'importer ensuite.
-  Future<void> pickOldVault() async {
-    final f = await openFile(acceptedTypeGroups: [
-      XTypeGroup(label: T.oldWlType, extensions: const ['aes'])
-    ]);
-    if (f == null) return;
-    try {
-      final d = await _localDir();
-      await File('$d${Platform.pathSeparator}$kVaultWl').writeAsBytes(await f.readAsBytes(), flush: true);
-      _set(() => info = T.oldPicked);
-    } catch (e) {
-      _set(() => error = T.oldReadFail(e));
-    }
-  }
-
   Future<void> _openVault() async {
     try {
       final v = Vault(await _localDir(), _sok!);
       await v.open();
       vault = v;
-      if (v.convertedFromWl) info = T.converted;
       await _initFilters();
     } on VaultError catch (e) {
       error = e.msg;
@@ -241,6 +391,8 @@ class AppState extends ChangeNotifier {
   /// Verrouille : oublie la cle et le contenu du trousseau.
   void lock() {
     unawaited(_commit()); // filtre en cours de frappe : enregistre avant d'oublier la cle
+    _lastFillId = null; // lot 26 : la derniere fiche choisie est oubliee
+    _lastFillAt = null;
     _host?.cancel();
     _host = null;
     _showSync = false;
@@ -252,6 +404,14 @@ class AppState extends ChangeNotifier {
     curFlt = null;
     filter = '';
     sortBy = '';
+    // W14 (lot 20) : les photos de carte dechiffrees ne restent pas en memoire.
+    try {
+      PaintingBinding.instance.imageCache
+        ..clear()
+        ..clearLiveImages();
+    } catch (_) {
+      // pas de moteur graphique (tests) : rien a effacer
+    }
     notifyListeners();
   }
 
@@ -289,15 +449,18 @@ class AppState extends ChangeNotifier {
     });
     try {
       await v.reloadIfChanged();
-      await h.open(v.data);
+      await h.open(v.data, img: _myImg(v));
       _set(() {
         syncQr = h.qr;
         syncStatus = T.scanThis;
       });
-      final remote = await h.waitPeer();
+      final (remote, peerImg) = await h.waitPeer();
       if (!identical(_host, h)) return; // remplace entre-temps (code saisi)
       final st = await v.applyRemote(remote);
-      _syncDone(st.toString());
+      _set(() => syncQr = null);
+      final ph = await _photos(v, h.photos(), peerImg, () => !identical(_host, h) || h.cancelled);
+      if (!identical(_host, h)) return;
+      _syncDone('$st$ph');
     } on SyncError catch (e) {
       if (identical(_host, h)) _syncFail(e.msg);
     } catch (_) {
@@ -324,14 +487,38 @@ class AppState extends ChangeNotifier {
     try {
       await v.reloadIfChanged();
       final mine = v.data; // AVANT fusion : c'est lui qui part vers l'autre
-      final remote = await SyncJoin(env, cfg!.mobU, _sok!).run(code, mine);
+      final (remote, peerImg, ps) =
+          await SyncJoin(env, cfg!.mobU, _sok!).run(code, mine, img: _myImg(v));
       final st = await v.applyRemote(remote);
-      _syncDone(st.toString());
+      final ph = await _photos(v, ps, peerImg, () => !_showSync);
+      _syncDone('$st$ph');
     } on SyncError catch (e) {
       _syncFail(e.msg);
     } catch (_) {
       _syncFail(T.syncFail);
     }
+  }
+
+  /// Photos referencees par le trousseau et presentes sur cet appareil.
+  Set<String> _myImg(Vault v) =>
+      {for (final e in v.entries) for (final id in e.crd) if (v.cards.has(id)) id};
+
+  /// W14 etape 2 (lot 22) : apres la fusion, echange des photos manquantes.
+  /// Rend le complement du message de fin ('' si rien a signaler). Un echec
+  /// n'annule jamais la synchro des fiches, deja enregistree.
+  Future<String> _photos(Vault v, PhotoSync ps, Set<String>? peer, bool Function() stop) async {
+    final used = {for (final e in v.entries) ...e.crd};
+    final plan = PhotoPlan.of(used, {for (final id in used) if (v.cards.has(id)) id}, peer);
+    if (plan.isEmpty) return '';
+    _set(() => syncStatus = T.photosStep(0, plan.send.length + plan.get.length));
+    final r = await ps.run(plan,
+        read: v.cards.get,
+        write: v.cards.putAs,
+        onStep: (d, t) => _set(() => syncStatus = T.photosStep(d, t)),
+        cancelled: stop);
+    if (r.got > 0) PaintingBinding.instance.imageCache.clear();
+    if (r.complete) return '\n${T.photosOk(r.sent, r.got)}';
+    return '\n${T.photosFail}';
   }
 
   void _syncDone(String msg) {
@@ -594,9 +781,13 @@ class AppState extends ChangeNotifier {
   void closeEdit() => _set(() => editing = null);
 
   Future<void> save(Entry e) async {
+    final isNew = !(vault?.entries.any((x) => x.id == e.id) ?? false);
     e.mod = DateTime.now().toUtc();
     e.use = e.mod;
     await _guard(() => vault!.upsert(e));
+    // W19 (Marc 20.11) : apres la CREATION d'une fiche, le filtre prend son
+    // nom (brouillon : aucun filtre enregistre ne change ; ⌫ le quitte).
+    if (isNew && error == null && e.nam.trim().isNotEmpty) filter = e.nam.trim();
     editing = null;
     notifyListeners();
   }
@@ -656,26 +847,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Ancien trousseau WL ──────────────────────────────────────────────
-  bool get hasOldVault => vault?.hasWl ?? false;
-
-  /// Importe l'ancien trousseau avec son ancienne cle ; la cle n'est gardee
-  /// nulle part (ni en memoire au-dela de cet appel, ni sur disque).
-  Future<bool> importOld(String oldKey) async {
-    try {
-      final (n, del) = await vault!.importWl(oldKey);
-      error = null;
-      info = T.imported(n, del);
-      notifyListeners();
-      return true;
-    } on VaultError catch (e) {
-      _set(() => error = e.msg);
-    } catch (_) {
-      _set(() => error = T.importFail);
-    }
-    return false;
-  }
-
   // ── Ecran Reseau ─────────────────────────────────────────────────────
   void showNet(bool v) => _set(() => _showNet = v);
 
@@ -686,9 +857,13 @@ class AppState extends ChangeNotifier {
     lock(); // un trousseau ouvert sous un environnement ne reste pas ouvert sous l'autre
   }
 
+  /// W14 (lot 20) : erreur affichee dans le bandeau (ex. photo non enregistree).
+  void showError(String m) => _set(() => error = m);
+
   void dismiss() => _set(() {
         error = null;
         info = null;
+        qoviHelp = false;
       });
 
   @override
